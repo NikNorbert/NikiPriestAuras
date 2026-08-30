@@ -51,7 +51,10 @@ local L = {
     selectedProc = "Selected: Searing Light proc",
     dragToMove = "NikiPriestAuras - drag to move",
     procDrag = "Searing Light - drag | wheel: size ",
-    procAlpha = "% | Shift+wheel: opacity "
+    procAlpha = "% | Shift+wheel: opacity ",
+    addonShown = "Addon reminders enabled.",
+    addonHidden = "Addon reminders hidden.",
+    commands = "Commands: /npa, /npa show, /npa hide, /npa set, /npa reset, /npa test"
 }
 
 if locale == "ruRU" then
@@ -78,6 +81,14 @@ if locale == "ruRU" then
     L.dragToMove = "NikiPriestAuras - перетащите для перемещения"
     L.procDrag = "Searing Light - перетаскивание | колесо: размер "
     L.procAlpha = "% | Shift+колесо: прозрачность "
+    L.addonShown = "Оповещения аддона включены."
+    L.addonHidden = "Оповещения аддона скрыты."
+    L.commands = "Команды: /npa, /npa show, /npa hide, /npa set, /npa reset, /npa test"
+end
+
+local function AddonVisualsEnabled()
+    return type(NikiPriestAurasDB) ~= "table" or
+           NikiPriestAurasDB.addonEnabled ~= false
 end
 
 local magicDispelCache = {}
@@ -685,6 +696,13 @@ local function HideProcAlertImmediately()
 end
 
 local function SetProcAlert(visible, immediate)
+    local testActive = procTestUntil and GetTime() < procTestUntil
+    if visible and not settingsMode and not testActive and
+       not AddonVisualsEnabled() then
+        visible = false
+        immediate = true
+    end
+
     if visible then
         if not procAlertActive then
             procAlertActive = true
@@ -843,6 +861,9 @@ local function UpdateProcAnimation(elapsed)
 end
 
 local function SetEnlightenedAura(visible, timeLeft)
+    if visible and not settingsMode and not AddonVisualsEnabled() then
+        visible = false
+    end
     if visible and type(NikiPriestAurasDB) == "table" and
        NikiPriestAurasDB.enlightenedAuraEnabled == false then
         visible = false
@@ -1591,6 +1612,11 @@ local function GetMissingPlayerBuffs()
 end
 
 local function UpdateReminders()
+    if not settingsMode and not AddonVisualsEnabled() then
+        HideReminders()
+        return
+    end
+
     if PlayerIsOnTaxi() then
         HideReminders()
         return
@@ -1760,6 +1786,9 @@ local function InitializeDatabase()
     end
     if type(NikiPriestAurasDB.shieldEnabled) ~= "boolean" then
         NikiPriestAurasDB.shieldEnabled = true
+    end
+    if type(NikiPriestAurasDB.addonEnabled) ~= "boolean" then
+        NikiPriestAurasDB.addonEnabled = true
     end
     if NikiPriestAurasDB.shieldFrameMode ~= "pfui" and
        NikiPriestAurasDB.shieldFrameMode ~= "blizzard" then
@@ -1935,7 +1964,7 @@ local function SetPlacementMode(enabled)
         end
         placementText:Show()
         LayoutReminders(true, false, false, false, false, false, false)
-        PrintMessage("placement mode enabled. Drag the faded icon, then type /npa lock.")
+        PrintMessage("placement mode enabled. Drag the faded icon, then close the settings window.")
     else
         anchor:StopMovingOrSizing()
         SavePosition()
@@ -2772,79 +2801,46 @@ local function OpenSettingsFrame()
 end
 
 SLASH_NIKIPRIESTAURAS1 = "/npa"
-SLASH_NIKIPRIESTAURAS2 = "/nikipriestauras"
 SlashCmdList["NIKIPRIESTAURAS"] = function(message)
     local command = string.lower(message or "")
     command = string.gsub(command, "^%s+", "")
     command = string.gsub(command, "%s+$", "")
 
-    local _, _, alphaText = string.find(command, "^alpha%s+(%d+)$")
-    local _, _, procSizeText = string.find(command, "^proc%s+size%s+(%d+)$")
-    local _, _, procAlphaText = string.find(command, "^proc%s+alpha%s+(%d+)$")
-
-    if command == "set" or command == "settings" then
+    if command == "set" then
         OpenSettingsFrame()
-    elseif command == "unlock" or command == "move" then
-        OpenSettingsFrame()
-        SelectSettingsObject("icons")
-    elseif command == "lock" then
-        if settingsFrame:IsShown() then
-            settingsFrame:Hide()
-        elseif procPlacementMode then
-            SetProcPlacementMode(false)
-        else
-            SetPlacementMode(false)
-        end
     elseif command == "reset" then
         ResetPosition()
-    elseif command == "proc unlock" or command == "proc move" then
-        OpenSettingsFrame()
-        SelectSettingsObject("proc")
-    elseif command == "proc lock" then
-        if settingsFrame:IsShown() then
-            settingsFrame:Hide()
-        else
-            SetProcPlacementMode(false)
-        end
-    elseif command == "aura unlock" or command == "aura move" then
-        OpenSettingsFrame()
-        SelectSettingsObject("aura")
-    elseif command == "aura lock" then
-        if settingsFrame:IsShown() then
-            settingsFrame:Hide()
-        end
-    elseif command == "proc reset" then
-        ResetProcSettings()
-    elseif procSizeText then
-        SetProcSize(tonumber(procSizeText), false)
-    elseif procAlphaText then
-        SetProcOpacity(tonumber(procAlphaText), false)
-    elseif command == "proc" then
-        local currentScale = 100
-        local currentAlpha = 85
-        if type(NikiPriestAurasDB) == "table" then
-            currentScale = NikiPriestAurasDB.procScale or currentScale
-            currentAlpha = NikiPriestAurasDB.procAlpha or currentAlpha
-        end
-        PrintMessage("Searing Light: size " .. tostring(currentScale) .. "%, opacity " .. tostring(currentAlpha) .. "%. Commands: /npa proc unlock, lock, reset, size 10-300, alpha 0-100")
-    elseif command == "test" or command == "testproc" then
+    elseif command == "test" then
         procTestUntil = GetTime() + 10
-        UpdateReminders()
+        SetProcAlert(true)
         PrintMessage("Searing Light alert test enabled for 10 seconds.")
-    elseif command == "testenlightened" or command == "test enlightened" then
-        enlightenedTestUntil = GetTime() + 10
-        UpdateReminders()
-        PrintMessage("Enlightened light-ray aura test enabled for 10 seconds.")
-    elseif alphaText then
-        SetOpacity(tonumber(alphaText))
-    elseif command == "alpha" then
-        local currentAlpha = 100
-        if type(NikiPriestAurasDB) == "table" and type(NikiPriestAurasDB.alpha) == "number" then
-            currentAlpha = NikiPriestAurasDB.alpha
+    elseif command == "show" then
+        if type(NikiPriestAurasDB) ~= "table" then
+            NikiPriestAurasDB = {}
         end
-        PrintMessage("current icon opacity: " .. tostring(currentAlpha) .. "%.")
+        NikiPriestAurasDB.addonEnabled = true
+        UpdateReminders()
+        if type(NikiPriestAuras_UpdateShieldDisplay) == "function" then
+            NikiPriestAuras_UpdateShieldDisplay()
+        end
+        PrintMessage(L.addonShown)
+    elseif command == "hide" then
+        if type(NikiPriestAurasDB) ~= "table" then
+            NikiPriestAurasDB = {}
+        end
+        NikiPriestAurasDB.addonEnabled = false
+        procTestUntil = nil
+        enlightenedTestUntil = nil
+        if settingsFrame:IsShown() then
+            settingsFrame:Hide()
+        end
+        HideReminders()
+        if type(NikiPriestAuras_UpdateShieldDisplay) == "function" then
+            NikiPriestAuras_UpdateShieldDisplay()
+        end
+        PrintMessage(L.addonHidden)
     else
-        PrintMessage("commands: /npa set, /npa unlock, /npa lock, /npa reset, /npa alpha 0-100, /npa test, /npa proc")
+        PrintMessage(L.commands)
     end
 end
 

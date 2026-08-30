@@ -52,12 +52,6 @@ local lastDamageSource = nil
 local lastDamageAmount = nil
 local lastAbsorbAmount = nil
 
-local function PrintMessage(message)
-    if DEFAULT_CHAT_FRAME then
-        DEFAULT_CHAT_FRAME:AddMessage("|cff80c0ffNikiPriestAuras Shield:|r " .. message)
-    end
-end
-
 local function CleanNumber(text)
     if not text then
         return nil
@@ -423,6 +417,15 @@ local function GetShieldFrameMode()
 end
 
 local function UpdateShieldDisplay()
+    if type(NikiPriestAurasDB) == "table" and
+       NikiPriestAurasDB.addonEnabled == false then
+        if pfShieldText then pfShieldText:Hide() end
+        if blizzardShieldText then blizzardShieldText:Hide() end
+        RestorePfUIHealthText()
+        RestoreBlizzardHealthText()
+        return
+    end
+
     local mode = GetShieldFrameMode()
 
     if mode == "blizzard" then
@@ -687,43 +690,3 @@ tracker:SetScript("OnUpdate", function()
         recentAbsorbs = {}
     end
 end)
-
-SLASH_NIKIPRIESTAURASSHIELD1 = "/npashield"
-SlashCmdList["NIKIPRIESTAURASSHIELD"] = function(message)
-    local command = string.lower(message or "")
-    command = string.gsub(command, "^%s+", "")
-    command = string.gsub(command, "%s+$", "")
-
-    if command == "tooltip" then
-        local hasShield, parsedMaximum = FindPlayerShield()
-        PrintMessage("tooltip scan: active=" .. tostring(hasShield) ..
-                     ", parsed maximum=" .. tostring(parsedMaximum) ..
-                     ", spellbook fallback=" .. tostring(GetSpellbookShieldMaximum()))
-        return
-    end
-
-    local maximumText = shieldMaximum and tostring(math.floor(shieldMaximum + 0.5)) or "unknown"
-    local remainingText = shieldRemaining and tostring(math.floor(shieldRemaining + 0.5)) or "unknown"
-    local modeText = GetShieldFrameMode()
-    local pfuiText = EnsurePfUIOverlay() and "yes" or "no"
-    local blizzardText = EnsureBlizzardOverlay() and "yes" or "no"
-    local eventText = customEventsRegistered and "yes" or "no"
-    local lastEventText = "none"
-    if lastDamageSource then
-        lastEventText = lastDamageSource ..
-                        " damage=" .. tostring(lastDamageAmount or 0) ..
-                        " absorb=" .. tostring(lastAbsorbAmount or 0)
-    end
-    PrintMessage("active=" .. tostring(shieldActive) ..
-                 ", remaining=" .. remainingText ..
-                 ", maximum=" .. maximumText ..
-                 ", absorbed=" .. tostring(math.floor(shieldAbsorbedTotal + 0.5)) ..
-                 ", frame=" .. modeText ..
-                 ", pfUI=" .. pfuiText ..
-                 ", Blizzard=" .. blizzardText ..
-                 ", Nampower events=" .. eventText ..
-                 ", auto=" .. tostring(autoAttackEventCount) ..
-                 ", spell=" .. tostring(spellDamageEventCount) ..
-                 ", log=" .. tostring(combatLogAbsorbCount) ..
-                 ", last=" .. lastEventText)
-end

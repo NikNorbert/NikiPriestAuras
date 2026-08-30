@@ -4,6 +4,18 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.16] - 2026-08-30
+
+### Changed
+
+- Reduced the public slash-command interface to `/npa`, `/npa show`,
+  `/npa hide`, `/npa set`, `/npa reset` and `/npa test`.
+- `/npa hide` now persistently disables all addon visuals, including the
+  player-frame shield counter, while `/npa show` restores them.
+- Removed legacy movement, opacity, proc, aura-test, long-name and shield-debug
+  slash-command aliases; those options remain available in `/npa set` where
+  applicable.
+
 ## [1.8.15] - 2026-08-30
 
 ### Added

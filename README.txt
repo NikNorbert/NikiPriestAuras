@@ -1,4 +1,4 @@
-NikiPriestAuras 1.8.15
+NikiPriestAuras 1.8.16
 =====================
 
 Smite Priest buff, dispel, Power Word: Shield, Searing Light and Enlightened
@@ -8,10 +8,12 @@ Install to:
 Interface\AddOns\NikiPriestAuras
 
 Main commands:
+/npa                  Show the command list.
+/npa show             Enable addon visuals.
+/npa hide             Disable addon visuals.
 /npa set              Open the settings window.
-/npa lock             Save positions and lock all elements.
+/npa reset            Reset the central icon position.
 /npa test             Preview Searing Light for 10 seconds.
-/npa testenlightened  Preview the Enlightened aura for 10 seconds.
 
 The settings window independently controls the position, size and opacity of
 the central icons, Enlightened aura and Searing Light proc. It also provides

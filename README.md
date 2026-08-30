@@ -84,17 +84,16 @@ Interface\AddOns\NikiPriestAuras\NikiPriestAuras.toc
 
 ## Settings
 
-Run `/npa set` or `/npa unlock`. The settings window lets you select one of
-three independently configured elements:
+Run `/npa set`. The settings window lets you select one of three independently
+configured elements:
 
 - **Icons** — position, size, opacity and spacing between icons.
 - **Aura** — enable/disable, position, size and opacity of the `Enlightened`
   aura.
 - **Proc** — position, size, opacity and animation speed of `Searing Light`.
 
-Drag the selected element with the left mouse button. Press **Lock** or run
-`/npa lock` to save the position, close the settings window and restore
-click-through behavior.
+Drag the selected element with the left mouse button. Press **Lock** to save
+the position, close the settings window and restore click-through behavior.
 
 The two checkboxes at the bottom control:
 
@@ -123,17 +122,15 @@ No manual language selection is required.
 
 | Command | Action |
 |---|---|
+| `/npa` | Show the available command list |
+| `/npa show` | Enable all addon visuals |
+| `/npa hide` | Hide and persistently disable all addon visuals |
 | `/npa set` | Open the settings window |
-| `/npa unlock` | Open settings and select the central icon group |
-| `/npa lock` | Save positions and lock all elements |
 | `/npa reset` | Reset the central icon group position |
-| `/npa alpha 0-100` | Set central icon opacity |
 | `/npa test` | Preview `Searing Light` for 10 seconds |
-| `/npa testenlightened` | Preview the `Enlightened` aura for 10 seconds |
-| `/npa proc unlock` | Open settings and select the proc element |
-| `/npa proc size 10-300` | Set proc size |
-| `/npa proc alpha 0-100` | Set proc opacity |
-| `/npa proc reset` | Reset proc settings |
+
+These are the only public slash commands. Size, opacity, position, spacing,
+animation and display options are configured through `/npa set`.
 
 ## Development and packaging
 
