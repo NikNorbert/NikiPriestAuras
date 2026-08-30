@@ -1,0 +1,10 @@
+## Interface: 11200
+## Title: NikiPriestAuras
+## Notes: Animated Priest buff, dispel, shield, proc and aura reminders.
+## Author: Niki
+## Version: 1.8.13
+## OptionalDeps: pfUI, SuperAPI, NampowerSettings
+## SavedVariables: NikiPriestAurasDB
+
+NikiPriestAuras.lua
+ShieldTracker.lua

@@ -1,0 +1,74 @@
+# Changelog
+
+All notable changes to NikiPriestAuras are documented here.
+
+## [Unreleased]
+
+## [1.8.13] - 2026-08-30
+
+### Added
+
+- Added automatic English settings localization for every client locale except
+  `ruRU`, which keeps the existing Russian interface.
+- Added repository screenshots for the complete custom reminder artwork set and
+  the settings window.
+
+### Changed
+
+- Reworked the GitHub README as a complete English project page with updated
+  installation, configuration, screenshot and release instructions.
+
+## [1.8.12] - 2026-08-30
+
+### Changed
+
+- Extended the subtle amber undertone through roughly the lower half of the
+  custom `Inner Fire` flame, with an irregular translucent fade that keeps the
+  artwork predominantly pearl white.
+
+## [1.8.11] - 2026-08-30
+
+### Changed
+
+- Refined the custom `Inner Fire` reminder with more realistic translucent
+  chemical-flame detail and a restrained amber-orange heat gradient at its
+  base, while keeping the upper flame pearl white.
+
+## [1.8.10] - 2026-08-30
+
+### Changed
+
+- Shifted the custom `Inner Fire` reminder to a predominantly pearl-white holy
+  flame, retaining blue only in its translucent shadows and a thin lavender
+  outer glow.
+
+## [1.8.9] - 2026-08-30
+
+### Changed
+
+- Reworked the custom `Inner Fire` reminder into the shared white, icy-blue and
+  restrained violet holy-magic palette used by the other reminder artwork.
+- The new realistic flame texture uses additive blending, removing its black
+  background in game while preserving the soft outer glow.
+
+## [1.8.8] - 2026-08-30
+
+### Fixed
+
+- `Searing Light` animation no longer freezes or restarts while the player is
+  moving.
+- Proc detection now prefers the stable Vanilla `GetPlayerBuff` API and keeps
+  the extended `UnitBuff` spell-id check as a fallback.
+- Animation timing now uses the game clock to avoid movement callbacks from
+  overwriting the Vanilla global elapsed-time argument.
+
+### Current feature set
+
+- Independent settings and drag positions for icons, `Enlightened` aura and
+  `Searing Light` proc.
+- Configurable icon spacing, element size/opacity and proc animation speed.
+- Custom or original reminder textures.
+- pfUI `Power Word: Shield` durability display with recast and absorb tracking.
+- Smooth `Weakened Soul` warning, animated `Enlightened` aura and proc
+  screen-edge glow.
+- Automatic hiding during taxi travel.

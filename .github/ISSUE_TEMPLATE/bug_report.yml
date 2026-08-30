@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a reproducible problem with NikiPriestAuras
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What happened and what did you expect instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Log in as...
+        2. Cast...
+        3. Move/target...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Addon version
+      placeholder: 1.8.13
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Client and server
+      placeholder: Turtle-derived 1.18.1 client, RavenCraft
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: integrations
+    attributes:
+      label: Installed integrations
+      options:
+        - label: pfUI
+        - label: SuperWoW / SuperAPI
+        - label: Nampower
+
+  - type: textarea
+    id: errors
+    attributes:
+      label: Lua errors or screenshots
+      description: Paste the full error text and attach screenshots if available.
+      render: text

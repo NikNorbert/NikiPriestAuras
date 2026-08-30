@@ -1,0 +1,31 @@
+# Local packages
+dist/
+
+# Editor and operating-system files
+.idea/
+.vscode/
+*.swp
+*.tmp
+Thumbs.db
+.DS_Store
+
+# Working artwork that is not required by the addon at runtime
+Textures/Candidates/
+Textures/Drafts/
+Textures/*_source.png
+Textures/*Source.png
+Textures/EnlightenedAura*.png
+Textures/SearingLightProc-preview-legacy.png
+
+# Superseded runtime exports kept locally for comparison
+Textures/EnlightenedAuraOvalVertical_256.tga
+Textures/EnlightenedAuraOval_1024.tga
+Textures/EnlightenedAuraOval_512.tga
+Textures/EnlightenedAuraWispsRound_512.tga
+Textures/EnlightenedAuraWisps_256.tga
+Textures/SearingLightProc.tga
+Textures/SearingLightProc_256-legacy.tga
+
+# Keep the two lightweight README previews
+!Textures/SearingLightProc-preview.png
+!Textures/InnerFireReminder-preview.png
