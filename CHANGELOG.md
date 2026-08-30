@@ -4,6 +4,13 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.15] - 2026-08-30
+
+### Added
+
+- Added a localized checkbox in the Aura section of `/npa set` for disabling
+  the animated `Enlightened` screen aura independently of its reminder icon.
+
 ## [1.8.14] - 2026-08-30
 
 ### Added

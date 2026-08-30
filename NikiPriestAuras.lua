@@ -37,6 +37,7 @@ local L = {
     shieldFrame = "Shield numbers on player frame:",
     shieldFramePfUI = "pfUI",
     shieldFrameBlizzard = "Blizzard (original)",
+    enlightenedAuraEnabled = "Show Enlightened aura",
     originalIcons = "Original spell icons",
     size = "Size",
     opacity = "Opacity",
@@ -62,6 +63,7 @@ if locale == "ruRU" then
     L.shieldFrame = "Цифры щита на фрейме игрока:"
     L.shieldFramePfUI = "pfUI"
     L.shieldFrameBlizzard = "Blizzard (ориг.)"
+    L.enlightenedAuraEnabled = "Показывать ауру Enlightened"
     L.originalIcons = "Оригинальные иконки"
     L.size = "Размер"
     L.opacity = "Прозрачность"
@@ -841,6 +843,11 @@ local function UpdateProcAnimation(elapsed)
 end
 
 local function SetEnlightenedAura(visible, timeLeft)
+    if visible and type(NikiPriestAurasDB) == "table" and
+       NikiPriestAurasDB.enlightenedAuraEnabled == false then
+        visible = false
+    end
+
     timeLeft = tonumber(timeLeft)
     if timeLeft and timeLeft <= 0 then
         timeLeft = nil
@@ -1745,6 +1752,9 @@ local function InitializeDatabase()
     if type(NikiPriestAurasDB.auraAlpha) ~= "number" then
         NikiPriestAurasDB.auraAlpha = 100
     end
+    if type(NikiPriestAurasDB.enlightenedAuraEnabled) ~= "boolean" then
+        NikiPriestAurasDB.enlightenedAuraEnabled = true
+    end
     if type(NikiPriestAurasDB.procAnimationSpeed) ~= "number" then
         NikiPriestAurasDB.procAnimationSpeed = 100
     end
@@ -2520,6 +2530,30 @@ local procAnimationSpeedSlider = CreateSettingsSlider(
     end
 )
 
+local auraEnabledCheckbox = CreateFrame(
+    "CheckButton",
+    "NikiPriestAurasEnlightenedAuraEnabledCheckbox",
+    settingsFrame,
+    "UICheckButtonTemplate"
+)
+auraEnabledCheckbox:SetWidth(22)
+auraEnabledCheckbox:SetHeight(22)
+auraEnabledCheckbox:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", 45, -229)
+
+local auraEnabledLabel = auraEnabledCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+auraEnabledLabel:SetPoint("LEFT", auraEnabledCheckbox, "RIGHT", 1, 0)
+auraEnabledLabel:SetText(L.enlightenedAuraEnabled)
+auraEnabledLabel:SetTextColor(0.82, 0.90, 1.00)
+
+auraEnabledCheckbox:SetScript("OnClick", function()
+    if type(NikiPriestAurasDB) ~= "table" then
+        NikiPriestAurasDB = {}
+    end
+    NikiPriestAurasDB.enlightenedAuraEnabled =
+        this:GetChecked() and true or false
+    UpdateReminders()
+end)
+
 local settingsHint = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 settingsHint:SetPoint("BOTTOM", settingsFrame, "BOTTOM", 0, 45)
 settingsHint:SetText(L.dragHint)
@@ -2593,6 +2627,9 @@ local function RefreshSettingsControls()
     originalTexturesCheckbox:SetChecked(
         NikiPriestAurasDB.originalReminderTextures and 1 or nil
     )
+    auraEnabledCheckbox:SetChecked(
+        NikiPriestAurasDB.enlightenedAuraEnabled ~= false and 1 or nil
+    )
     procAnimationSpeedSlider:SetValue(NikiPriestAurasDB.procAnimationSpeed or 100)
     if settingsSelection == "icons" then
         iconSpacingSlider:Show()
@@ -2603,6 +2640,11 @@ local function RefreshSettingsControls()
         procAnimationSpeedSlider:Show()
     else
         procAnimationSpeedSlider:Hide()
+    end
+    if settingsSelection == "aura" then
+        auraEnabledCheckbox:Show()
+    else
+        auraEnabledCheckbox:Hide()
     end
     refreshingSettingsControls = false
 end

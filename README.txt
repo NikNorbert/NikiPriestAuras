@@ -1,4 +1,4 @@
-NikiPriestAuras 1.8.14
+NikiPriestAuras 1.8.15
 =====================
 
 Smite Priest buff, dispel, Power Word: Shield, Searing Light and Enlightened
@@ -20,6 +20,9 @@ options.
 
 Shield durability numbers can use either the pfUI player frame or the original
 Blizzard player frame. Choose the display mode in /npa set.
+
+The Aura section also lets you disable the animated Enlightened screen aura
+without disabling the Enlighten reminder icon.
 
 The settings interface is Russian on ruRU clients and English on all other
 client locales.

@@ -88,7 +88,8 @@ Run `/npa set` or `/npa unlock`. The settings window lets you select one of
 three independently configured elements:
 
 - **Icons** — position, size, opacity and spacing between icons.
-- **Aura** — position, size and opacity of the `Enlightened` aura.
+- **Aura** — enable/disable, position, size and opacity of the `Enlightened`
+  aura.
 - **Proc** — position, size, opacity and animation speed of `Searing Light`.
 
 Drag the selected element with the left mouse button. Press **Lock** or run
