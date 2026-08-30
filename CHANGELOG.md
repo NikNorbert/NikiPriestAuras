@@ -4,6 +4,20 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.14] - 2026-08-30
+
+### Added
+
+- Added `Power Word: Shield` durability numbers to the original Blizzard
+  player frame while retaining the existing pfUI display.
+- Added a localized `/npa set` selector for choosing the pfUI or original
+  Blizzard player frame.
+
+### Changed
+
+- Shield-display switching now immediately restores the native health text on
+  the previously selected player frame.
+
 ## [1.8.13] - 2026-08-30
 
 ### Added

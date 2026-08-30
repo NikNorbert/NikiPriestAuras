@@ -24,8 +24,9 @@ reminders automatically hide during taxi flights.
 - `Power Word: Shield` reminder when a creature is attacking the player and the
   shield is missing or has five seconds or less remaining.
 - Smooth shield-icon pulsing while `Weakened Soul` prevents a recast.
-- Optional pfUI player-frame shield durability estimate in the
-  `remaining / maximum` format, with warning colors at low strength.
+- Optional player-frame shield durability estimate in the
+  `remaining / maximum` format, with warning colors at low strength. The
+  display supports both pfUI and the original Blizzard player frame.
 - Animated `Searing Light` proc with flowing waves, pulsing light, a screen-edge
   glow and a short expanding fade after the proc is consumed by `Smite`.
 - Animated `Enlightened` light-ray aura that rotates and pulses faster as the
@@ -55,7 +56,8 @@ client locale.
 | Component | Status |
 |---|---|
 | Turtle WoW 1.18.1 / Vanilla API 1.12 | Supported |
-| pfUI | Recommended for the shield durability display |
+| pfUI | Supported; shield numbers can use the pfUI player frame |
+| Original Blizzard UI | Supported; shield numbers can use the stock player frame |
 | SuperWoW / SuperAPI | Supported |
 | Nampower | Recommended for more accurate effect and damage information |
 
@@ -99,6 +101,15 @@ The two checkboxes at the bottom control:
   spell textures.
 - **Shield while attacked** — enable or disable the `Power Word: Shield`
   combat reminder.
+
+The **Shield numbers on player frame** selector chooses where the durability
+counter replaces health while `Power Word: Shield` is active:
+
+- **pfUI** — use the pfUI player frame.
+- **Blizzard (original)** — use the stock Blizzard player frame.
+
+The addon restores the normal health value as soon as the shield expires or
+when the other frame mode is selected.
 
 ### Interface language
 

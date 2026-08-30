@@ -34,6 +34,9 @@ local L = {
     aura = "Aura",
     proc = "Proc",
     shieldWhileAttacked = "Shield while attacked",
+    shieldFrame = "Shield numbers on player frame:",
+    shieldFramePfUI = "pfUI",
+    shieldFrameBlizzard = "Blizzard (original)",
     originalIcons = "Original spell icons",
     size = "Size",
     opacity = "Opacity",
@@ -56,6 +59,9 @@ if locale == "ruRU" then
     L.aura = "Аура"
     L.proc = "Прок"
     L.shieldWhileAttacked = "Щит при атаке"
+    L.shieldFrame = "Цифры щита на фрейме игрока:"
+    L.shieldFramePfUI = "pfUI"
+    L.shieldFrameBlizzard = "Blizzard (ориг.)"
     L.originalIcons = "Оригинальные иконки"
     L.size = "Размер"
     L.opacity = "Прозрачность"
@@ -1745,6 +1751,16 @@ local function InitializeDatabase()
     if type(NikiPriestAurasDB.shieldEnabled) ~= "boolean" then
         NikiPriestAurasDB.shieldEnabled = true
     end
+    if NikiPriestAurasDB.shieldFrameMode ~= "pfui" and
+       NikiPriestAurasDB.shieldFrameMode ~= "blizzard" then
+        -- Preserve the old placement when pfUI is available, but make the
+        -- built-in player frame work automatically on a stock UI install.
+        if pfUI and pfUI.uf then
+            NikiPriestAurasDB.shieldFrameMode = "pfui"
+        else
+            NikiPriestAurasDB.shieldFrameMode = "blizzard"
+        end
+    end
     if type(NikiPriestAurasDB.originalReminderTextures) ~= "boolean" then
         NikiPriestAurasDB.originalReminderTextures = false
     end
@@ -2248,7 +2264,7 @@ end)
 -- Standalone settings window opened with /npa set.
 local settingsFrame = CreateFrame("Frame", "NikiPriestAurasSettingsFrame", UIParent)
 settingsFrame:SetWidth(335)
-settingsFrame:SetHeight(380)
+settingsFrame:SetHeight(420)
 settingsFrame:SetPoint("CENTER", UIParent, "CENTER", 330, 0)
 settingsFrame:SetFrameStrata("DIALOG")
 settingsFrame:SetFrameLevel(50)
@@ -2358,6 +2374,61 @@ originalTexturesCheckbox:SetScript("OnClick", function()
     ApplyReminderTextureStyle()
     UpdateReminders()
 end)
+
+local shieldFrameSection = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+shieldFrameSection:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", 28, -307)
+shieldFrameSection:SetText(L.shieldFrame)
+shieldFrameSection:SetTextColor(0.65, 0.84, 1.00)
+
+local shieldFrameButtons = {}
+
+local function SelectShieldFrameMode(mode)
+    if type(NikiPriestAurasDB) ~= "table" then
+        NikiPriestAurasDB = {}
+    end
+    if mode ~= "blizzard" then
+        mode = "pfui"
+    end
+    NikiPriestAurasDB.shieldFrameMode = mode
+
+    shieldFrameButtons.pfui:SetChecked(mode == "pfui" and 1 or nil)
+    shieldFrameButtons.blizzard:SetChecked(mode == "blizzard" and 1 or nil)
+
+    if type(NikiPriestAuras_UpdateShieldDisplay) == "function" then
+        NikiPriestAuras_UpdateShieldDisplay()
+    end
+end
+
+local function CreateShieldFrameButton(name, label, mode, x)
+    local button = CreateFrame("CheckButton", name, settingsFrame, "UICheckButtonTemplate")
+    button:SetWidth(22)
+    button:SetHeight(22)
+    button:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", x, -322)
+    button.shieldFrameMode = mode
+
+    local buttonLabel = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    buttonLabel:SetPoint("LEFT", button, "RIGHT", 1, 0)
+    buttonLabel:SetText(label)
+    buttonLabel:SetTextColor(0.82, 0.90, 1.00)
+
+    button:SetScript("OnClick", function()
+        SelectShieldFrameMode(this.shieldFrameMode)
+    end)
+    shieldFrameButtons[mode] = button
+end
+
+CreateShieldFrameButton(
+    "NikiPriestAurasShieldFramePfUI",
+    L.shieldFramePfUI,
+    "pfui",
+    25
+)
+CreateShieldFrameButton(
+    "NikiPriestAurasShieldFrameBlizzard",
+    L.shieldFrameBlizzard,
+    "blizzard",
+    175
+)
 
 local function CreateSettingsSlider(name, label, y, minimum, maximum, callback, suffix)
     local slider = CreateFrame("Slider", name, settingsFrame, "OptionsSliderTemplate")
@@ -2516,6 +2587,9 @@ local function RefreshSettingsControls()
     iconSpacingSlider:SetValue(NikiPriestAurasDB.iconSpacing or ICON_GAP)
 
     shieldEnabledCheckbox:SetChecked(NikiPriestAurasDB.shieldEnabled and 1 or nil)
+    local shieldFrameMode = NikiPriestAurasDB.shieldFrameMode or "pfui"
+    shieldFrameButtons.pfui:SetChecked(shieldFrameMode == "pfui" and 1 or nil)
+    shieldFrameButtons.blizzard:SetChecked(shieldFrameMode == "blizzard" and 1 or nil)
     originalTexturesCheckbox:SetChecked(
         NikiPriestAurasDB.originalReminderTextures and 1 or nil
     )

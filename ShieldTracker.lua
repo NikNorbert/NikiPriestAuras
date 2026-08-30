@@ -1,4 +1,4 @@
--- NikiPriestAuras: Power Word: Shield durability on the pfUI player frame.
+-- NikiPriestAuras: Power Word: Shield durability on pfUI or Blizzard player frames.
 -- Turtle WoW 1.18.1 / Vanilla 1.12 API, with optional Nampower precision.
 
 local UPDATE_INTERVAL = 0.10
@@ -35,7 +35,11 @@ local shieldActive = false
 local shieldMaximum = nil
 local shieldRemaining = nil
 local pfPlayerFrame = nil
-local shieldText = nil
+local pfShieldText = nil
+local blizzardHealthBar = nil
+local blizzardShieldText = nil
+local pfHealthTextState = nil
+local blizzardHealthTextState = nil
 local customEventsRegistered = false
 local recentAbsorbs = {}
 local autoAttackEventCount = 0
@@ -221,7 +225,7 @@ local function FindPlayerShield()
 end
 
 local function EnsurePfUIOverlay()
-    if pfPlayerFrame and shieldText then
+    if pfPlayerFrame and pfShieldText then
         return true
     end
 
@@ -235,82 +239,229 @@ local function EnsurePfUIOverlay()
     end
 
     pfPlayerFrame = frame
-    shieldText = frame.texts:CreateFontString(
+    pfShieldText = frame.texts:CreateFontString(
         "NikiPriestAurasPfUIShieldText",
         "OVERLAY",
         "GameFontNormalSmall"
     )
-    shieldText:ClearAllPoints()
-    shieldText:SetPoint("TOPLEFT", frame.hp.bar, "TOPLEFT", 1, 1)
-    shieldText:SetPoint("BOTTOMRIGHT", frame.hp.bar, "BOTTOMRIGHT", -1, -1)
-    shieldText:SetJustifyH("CENTER")
-    shieldText:SetJustifyV("MIDDLE")
+    pfShieldText:ClearAllPoints()
+    pfShieldText:SetPoint("TOPLEFT", frame.hp.bar, "TOPLEFT", 1, 1)
+    pfShieldText:SetPoint("BOTTOMRIGHT", frame.hp.bar, "BOTTOMRIGHT", -1, -1)
+    pfShieldText:SetJustifyH("CENTER")
+    pfShieldText:SetJustifyV("MIDDLE")
 
     if frame.hpCenterText and frame.hpCenterText.GetFont then
         local font, size, flags = frame.hpCenterText:GetFont()
         if font and size then
-            shieldText:SetFont(font, size, flags)
+            pfShieldText:SetFont(font, size, flags)
         end
     end
 
-    shieldText:Hide()
+    pfShieldText:Hide()
     return true
+end
+
+local function EnsureBlizzardOverlay()
+    if blizzardHealthBar and blizzardShieldText then
+        return true
+    end
+
+    local frame = getglobal("PlayerFrameHealthBar")
+    if not frame or not frame.CreateFontString then
+        return false
+    end
+
+    blizzardHealthBar = frame
+    blizzardShieldText = frame:CreateFontString(
+        "NikiPriestAurasBlizzardShieldText",
+        "OVERLAY",
+        "GameFontNormalSmall"
+    )
+    blizzardShieldText:ClearAllPoints()
+    blizzardShieldText:SetPoint("TOPLEFT", frame, "TOPLEFT", 1, 1)
+    blizzardShieldText:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -1, -1)
+    blizzardShieldText:SetJustifyH("CENTER")
+    blizzardShieldText:SetJustifyV("MIDDLE")
+
+    local nativeText = getglobal("PlayerFrameHealthBarText")
+    if nativeText and nativeText.GetFont then
+        local font, size, flags = nativeText:GetFont()
+        if font and size then
+            blizzardShieldText:SetFont(font, size, flags)
+        end
+    end
+
+    blizzardShieldText:Hide()
+    return true
+end
+
+local function CaptureTextState(texts)
+    local state = {}
+    local index
+    for index = 1, table.getn(texts) do
+        local text = texts[index]
+        if text then
+            table.insert(state, {
+                text = text,
+                shown = text:IsShown() and true or false,
+            })
+        end
+    end
+    return state
+end
+
+local function MakeTextList(first, second, third)
+    local texts = {}
+    if first then table.insert(texts, first) end
+    if second then table.insert(texts, second) end
+    if third then table.insert(texts, third) end
+    return texts
+end
+
+local function HideCapturedTexts(state)
+    if not state then
+        return
+    end
+    local index
+    for index = 1, table.getn(state) do
+        state[index].text:Hide()
+    end
+end
+
+local function RestoreCapturedTexts(state)
+    if not state then
+        return
+    end
+    local index
+    for index = 1, table.getn(state) do
+        if state[index].shown then
+            state[index].text:Show()
+        else
+            state[index].text:Hide()
+        end
+    end
 end
 
 local function HidePfUIHealthText()
     if not pfPlayerFrame then
         return
     end
-    if pfPlayerFrame.hpLeftText then pfPlayerFrame.hpLeftText:Hide() end
-    if pfPlayerFrame.hpCenterText then pfPlayerFrame.hpCenterText:Hide() end
-    if pfPlayerFrame.hpRightText then pfPlayerFrame.hpRightText:Hide() end
+    if not pfHealthTextState then
+        pfHealthTextState = CaptureTextState(MakeTextList(
+            pfPlayerFrame.hpLeftText,
+            pfPlayerFrame.hpCenterText,
+            pfPlayerFrame.hpRightText
+        ))
+    end
+    HideCapturedTexts(pfHealthTextState)
 end
 
 local function RestorePfUIHealthText()
     if not pfPlayerFrame then
         return
     end
-    if pfPlayerFrame.hpLeftText then pfPlayerFrame.hpLeftText:Show() end
-    if pfPlayerFrame.hpCenterText then pfPlayerFrame.hpCenterText:Show() end
-    if pfPlayerFrame.hpRightText then pfPlayerFrame.hpRightText:Show() end
+    RestoreCapturedTexts(pfHealthTextState)
+    pfHealthTextState = nil
 end
 
-local function UpdatePfUIShieldText()
-    if not EnsurePfUIOverlay() then
+local function HideBlizzardHealthText()
+    if not blizzardHealthTextState then
+        blizzardHealthTextState = CaptureTextState(MakeTextList(
+            getglobal("PlayerFrameHealthBarText"),
+            getglobal("PlayerFrameHealthBarTextLeft"),
+            getglobal("PlayerFrameHealthBarTextRight")
+        ))
+    end
+    HideCapturedTexts(blizzardHealthTextState)
+end
+
+local function RestoreBlizzardHealthText()
+    RestoreCapturedTexts(blizzardHealthTextState)
+    blizzardHealthTextState = nil
+end
+
+local function SetShieldValueText(text)
+    if not text then
         return
     end
-
-    if not shieldActive then
-        shieldText:Hide()
-        RestorePfUIHealthText()
-        return
-    end
-
-    HidePfUIHealthText()
 
     if shieldMaximum and shieldMaximum > 0 then
         local remaining = shieldRemaining or shieldMaximum
         remaining = math.max(0, math.min(shieldMaximum, remaining))
         local ratio = remaining / shieldMaximum
 
-        shieldText:SetText(tostring(math.floor(remaining + 0.5)) .. " / " ..
-                           tostring(math.floor(shieldMaximum + 0.5)))
+        text:SetText(tostring(math.floor(remaining + 0.5)) .. " / " ..
+                     tostring(math.floor(shieldMaximum + 0.5)))
         if ratio <= CRITICAL_SHIELD_THRESHOLD then
-            shieldText:SetTextColor(1.00, 0.18, 0.12, 1)
+            text:SetTextColor(1.00, 0.18, 0.12, 1)
         elseif ratio <= LOW_SHIELD_THRESHOLD then
-            shieldText:SetTextColor(1.00, 0.82, 0.12, 1)
+            text:SetTextColor(1.00, 0.82, 0.12, 1)
         else
-            shieldText:SetTextColor(0.78, 0.90, 1.00, 1)
+            text:SetTextColor(0.78, 0.90, 1.00, 1)
         end
     else
         -- This is used only if a localized client tooltip cannot expose the
         -- absorb value. Health text is still replaced while the shield lives.
-        shieldText:SetText("SHIELD")
-        shieldText:SetTextColor(0.78, 0.90, 1.00, 1)
+        text:SetText("SHIELD")
+        text:SetTextColor(0.78, 0.90, 1.00, 1)
+    end
+end
+
+local function GetShieldFrameMode()
+    if type(NikiPriestAurasDB) == "table" and
+       NikiPriestAurasDB.shieldFrameMode == "blizzard" then
+        return "blizzard"
+    end
+    if type(NikiPriestAurasDB) == "table" and
+       NikiPriestAurasDB.shieldFrameMode == "pfui" then
+        return "pfui"
+    end
+    if pfUI and pfUI.uf then
+        return "pfui"
+    end
+    return "blizzard"
+end
+
+local function UpdateShieldDisplay()
+    local mode = GetShieldFrameMode()
+
+    if mode == "blizzard" then
+        if pfShieldText then pfShieldText:Hide() end
+        RestorePfUIHealthText()
+
+        if not EnsureBlizzardOverlay() then
+            return
+        end
+        if not shieldActive then
+            blizzardShieldText:Hide()
+            RestoreBlizzardHealthText()
+            return
+        end
+
+        HideBlizzardHealthText()
+        SetShieldValueText(blizzardShieldText)
+        blizzardShieldText:Show()
+        return
     end
 
-    shieldText:Show()
+    if blizzardShieldText then blizzardShieldText:Hide() end
+    RestoreBlizzardHealthText()
+
+    if not EnsurePfUIOverlay() then
+        return
+    end
+    if not shieldActive then
+        pfShieldText:Hide()
+        RestorePfUIHealthText()
+        return
+    end
+
+    HidePfUIHealthText()
+    SetShieldValueText(pfShieldText)
+    pfShieldText:Show()
 end
+
+NikiPriestAuras_UpdateShieldDisplay = UpdateShieldDisplay
 
 local function ResetShieldDurability(parsedMaximum, timeLeft)
     shieldActive = true
@@ -352,7 +503,7 @@ local function RefreshShieldState(forceReset)
         shieldRemovalGraceUntil = GetTime() + SHIELD_REMOVAL_GRACE
     end
 
-    UpdatePfUIShieldText()
+    UpdateShieldDisplay()
 end
 
 local function IsDuplicateAbsorb(amount, source)
@@ -395,7 +546,7 @@ local function ApplyAbsorbedDamage(amount, source, damage)
     lastDamageAmount = tonumber(damage)
     lastAbsorbAmount = amount
     if shieldActive then
-        UpdatePfUIShieldText()
+        UpdateShieldDisplay()
     end
 end
 
@@ -524,8 +675,8 @@ tracker:SetScript("OnUpdate", function()
     end
     elapsedSinceUpdate = 0
 
-    -- Polling keeps the overlay above pfUI's own frequent health-text refresh
-    -- and also covers Turtle builds that delay PLAYER_AURAS_CHANGED.
+    -- Polling keeps the selected overlay above the player frame's frequent
+    -- health-text refresh and covers Turtle builds that delay aura events.
     RefreshShieldState()
 
     if shieldRemovalGraceUntil and GetTime() > shieldRemovalGraceUntil then
@@ -553,7 +704,9 @@ SlashCmdList["NIKIPRIESTAURASSHIELD"] = function(message)
 
     local maximumText = shieldMaximum and tostring(math.floor(shieldMaximum + 0.5)) or "unknown"
     local remainingText = shieldRemaining and tostring(math.floor(shieldRemaining + 0.5)) or "unknown"
+    local modeText = GetShieldFrameMode()
     local pfuiText = EnsurePfUIOverlay() and "yes" or "no"
+    local blizzardText = EnsureBlizzardOverlay() and "yes" or "no"
     local eventText = customEventsRegistered and "yes" or "no"
     local lastEventText = "none"
     if lastDamageSource then
@@ -565,7 +718,9 @@ SlashCmdList["NIKIPRIESTAURASSHIELD"] = function(message)
                  ", remaining=" .. remainingText ..
                  ", maximum=" .. maximumText ..
                  ", absorbed=" .. tostring(math.floor(shieldAbsorbedTotal + 0.5)) ..
+                 ", frame=" .. modeText ..
                  ", pfUI=" .. pfuiText ..
+                 ", Blizzard=" .. blizzardText ..
                  ", Nampower events=" .. eventText ..
                  ", auto=" .. tostring(autoAttackEventCount) ..
                  ", spell=" .. tostring(spellDamageEventCount) ..
