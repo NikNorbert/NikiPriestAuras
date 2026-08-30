@@ -32,7 +32,7 @@ local L = {
     configure = "Unlock and configure:",
     icons = "Icons",
     aura = "Aura",
-    proc = "Proc",
+    proc = "Searing Light",
     shieldWhileAttacked = "Shield while attacked",
     shieldFrame = "Shield numbers on player frame:",
     shieldFramePfUI = "pfUI",
@@ -48,7 +48,7 @@ local L = {
     lock = "Lock",
     selectedIcons = "Selected: icons",
     selectedAura = "Selected: Enlightened aura",
-    selectedProc = "Selected: Searing Light proc",
+    selectedProc = "Selected: Searing Light",
     dragToMove = "NikiPriestAuras - drag to move",
     procDrag = "Searing Light - drag | wheel: size ",
     procAlpha = "% | Shift+wheel: opacity ",
@@ -61,7 +61,7 @@ if locale == "ruRU" then
     L.configure = "Разблокировать и настроить:"
     L.icons = "Иконки"
     L.aura = "Аура"
-    L.proc = "Прок"
+    L.proc = "Searing Light"
     L.shieldWhileAttacked = "Щит при атаке"
     L.shieldFrame = "Цифры щита на фрейме игрока:"
     L.shieldFramePfUI = "pfUI"
@@ -77,7 +77,7 @@ if locale == "ruRU" then
     L.lock = "Заблокировать"
     L.selectedIcons = "Выбрано: иконки"
     L.selectedAura = "Выбрано: аура Enlightened"
-    L.selectedProc = "Выбрано: прок Searing Light"
+    L.selectedProc = "Выбрано: Searing Light"
     L.dragToMove = "NikiPriestAuras - перетащите для перемещения"
     L.procDrag = "Searing Light - перетаскивание | колесо: размер "
     L.procAlpha = "% | Shift+колесо: прозрачность "
@@ -385,9 +385,8 @@ procScreenGlowRight:SetGradientAlpha("HORIZONTAL", 1.00, 0.48, 0.05, 0.00, 1.00,
 procScreenGlowFrame:SetAlpha(0)
 procScreenGlowFrame:Hide()
 
--- A click-through living aura for the short Enlightened buff. Disconnected
--- light wisps replace the old solid oval; several phase-shifted copies and
--- rising motes make the aura flow without exposing a rectangular background.
+-- A click-through living aura for the short Enlightened buff. Several
+-- phase-shifted copies pulse and rotate without obscuring the character.
 local enlightenedAuraFrame = CreateFrame("Frame", "NikiPriestAurasEnlightenedAura", UIParent)
 enlightenedAuraFrame:SetWidth(ENLIGHTENED_AURA_WIDTH)
 enlightenedAuraFrame:SetHeight(ENLIGHTENED_AURA_HEIGHT)
@@ -425,20 +424,6 @@ enlightenedAuraTextureMain:SetVertexColor(1.00, 0.98, 0.90, 1)
 enlightenedAuraTextureMain:SetPoint("CENTER", enlightenedAuraFrame, "CENTER", 0, 0)
 enlightenedAuraTextureMain:SetWidth(ENLIGHTENED_AURA_WIDTH)
 enlightenedAuraTextureMain:SetHeight(ENLIGHTENED_AURA_HEIGHT)
-
-local enlightenedAuraMotes = {}
-local enlightenedMoteIndex
-for enlightenedMoteIndex = 1, 6 do
-    local mote = enlightenedAuraFrame:CreateTexture(nil, "OVERLAY")
-    mote:SetTexture("Interface\\Cooldown\\star4")
-    mote:SetBlendMode("ADD")
-    mote:SetVertexColor(1.00, 0.92, 0.68, 1)
-    mote:SetWidth(8 + math.mod(enlightenedMoteIndex, 3) * 3)
-    mote:SetHeight(8 + math.mod(enlightenedMoteIndex, 3) * 3)
-    mote:SetPoint("CENTER", enlightenedAuraFrame, "CENTER", 0, 0)
-    mote:SetAlpha(0)
-    table.insert(enlightenedAuraMotes, mote)
-end
 
 enlightenedAuraFrame:SetAlpha(0)
 enlightenedAuraFrame:Hide()
@@ -971,8 +956,8 @@ local function UpdateEnlightenedAuraAnimation(elapsed)
     elseif settingsMode and settingsSelection == "aura" then
         alpha = 0.360 + breath * 0.180
     end
-    -- The three copies never align perfectly: their small independent drift
-    -- makes the separated strokes look like flowing light rather than a frame.
+    -- The three centered copies use independent scale and alpha waves. Their
+    -- anchor never moves, so the aura only pulses and rotates around the player.
     local mainScale = 0.985 + breath * 0.025
     local flowWave = (math.sin(enlightenedAuraElapsed * 0.73 + 1.10) + 1) / 2
     local outerWave = (math.sin(enlightenedAuraElapsed * 0.47 + 2.20) + 1) / 2
@@ -981,21 +966,13 @@ local function UpdateEnlightenedAuraAnimation(elapsed)
     local auraHeight = ENLIGHTENED_AURA_HEIGHT * configuredScale
 
     enlightenedAuraTextureMain:ClearAllPoints()
-    enlightenedAuraTextureMain:SetPoint(
-        "CENTER", enlightenedAuraFrame, "CENTER",
-        math.sin(enlightenedAuraElapsed * 0.31) * 2.5 * configuredScale,
-        math.sin(enlightenedAuraElapsed * 0.43) * 4.0 * configuredScale
-    )
+    enlightenedAuraTextureMain:SetPoint("CENTER", enlightenedAuraFrame, "CENTER", 0, 0)
     enlightenedAuraTextureMain:SetWidth(auraWidth * mainScale)
     enlightenedAuraTextureMain:SetHeight(auraHeight * mainScale)
     enlightenedAuraTextureMain:SetAlpha(0.72 + breath * 0.28)
 
     enlightenedAuraTextureFlow:ClearAllPoints()
-    enlightenedAuraTextureFlow:SetPoint(
-        "CENTER", enlightenedAuraFrame, "CENTER",
-        math.sin(enlightenedAuraElapsed * 0.27 + 2.1) * 3.5 * configuredScale,
-        math.sin(enlightenedAuraElapsed * 0.38 + 0.8) * 7.0 * configuredScale
-    )
+    enlightenedAuraTextureFlow:SetPoint("CENTER", enlightenedAuraFrame, "CENTER", 0, 0)
     enlightenedAuraTextureFlow:SetWidth(
         auraWidth * (1.005 + flowWave * 0.045)
     )
@@ -1005,11 +982,7 @@ local function UpdateEnlightenedAuraAnimation(elapsed)
     enlightenedAuraTextureFlow:SetAlpha(0.10 + flowWave * 0.20)
 
     enlightenedAuraTextureOuter:ClearAllPoints()
-    enlightenedAuraTextureOuter:SetPoint(
-        "CENTER", enlightenedAuraFrame, "CENTER",
-        math.sin(enlightenedAuraElapsed * 0.22 + 4.0) * 5.0 * configuredScale,
-        math.sin(enlightenedAuraElapsed * 0.29 + 2.5) * 9.0 * configuredScale
-    )
+    enlightenedAuraTextureOuter:SetPoint("CENTER", enlightenedAuraFrame, "CENTER", 0, 0)
     enlightenedAuraTextureOuter:SetWidth(
         auraWidth * (1.055 + outerWave * 0.075)
     )
@@ -1017,28 +990,6 @@ local function UpdateEnlightenedAuraAnimation(elapsed)
         auraHeight * (1.055 + outerWave * 0.075)
     )
     enlightenedAuraTextureOuter:SetAlpha(0.05 + outerWave * 0.14)
-
-    local moteIndex
-    for moteIndex = 1, table.getn(enlightenedAuraMotes) do
-        local mote = enlightenedAuraMotes[moteIndex]
-        local motePhase = enlightenedAuraElapsed * 0.035 +
-                          (moteIndex - 1) / table.getn(enlightenedAuraMotes)
-        motePhase = motePhase - math.floor(motePhase)
-        local side = math.mod(moteIndex, 2) == 0 and 1 or -1
-        local moteX = side * (
-            auraWidth * 0.34 +
-            math.sin(enlightenedAuraElapsed * 0.19 + moteIndex) *
-            auraWidth * 0.055
-        )
-        local moteY = -auraHeight * 0.39 + motePhase * auraHeight * 0.78
-        local moteEnvelope = math.sin(motePhase * 3.14159)
-        local moteSize = (8 + math.mod(moteIndex, 3) * 3) * configuredScale
-        mote:ClearAllPoints()
-        mote:SetPoint("CENTER", enlightenedAuraFrame, "CENTER", moteX, moteY)
-        mote:SetWidth(moteSize)
-        mote:SetHeight(moteSize)
-        mote:SetAlpha(moteEnvelope * (0.22 + progress * 0.30))
-    end
 
     enlightenedAuraFrame:SetAlpha(alpha * entry * GetAuraDisplayAlpha())
 end

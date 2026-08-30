@@ -30,8 +30,8 @@ reminders automatically hide during taxi flights.
 - Animated `Searing Light` proc with flowing waves, pulsing light, a screen-edge
   glow and a short expanding fade after the proc is consumed by `Smite`.
 - Animated hollow `Enlightened` aura with irregular light rays of varied
-  length and brightness. It keeps the character visible, rotates and pulses
-  faster as the buff approaches expiration.
+  length and brightness. It stays centered on the character, rotates and
+  pulses faster as the buff approaches expiration.
 - Custom spell-shaped reminder artwork or the original spell icons.
 - Independent position, size and opacity settings for the central icon group,
   `Enlightened` aura and `Searing Light` proc.
@@ -91,7 +91,7 @@ configured elements:
 - **Icons** — position, size, opacity and spacing between icons.
 - **Aura** — enable/disable, position, size and opacity of the `Enlightened`
   aura.
-- **Proc** — position, size, opacity and animation speed of `Searing Light`.
+- **Searing Light** — position, size, opacity and animation speed of the proc.
 
 Drag the selected element with the left mouse button. Press **Lock** to save
 the position, close the settings window and restore click-through behavior.

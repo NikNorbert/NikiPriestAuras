@@ -4,6 +4,14 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.19] - 2026-08-30
+
+### Changed
+
+- Removed all X/Y layer drift and moving motes from the `Enlightened` aura;
+  it now uses only centered pulse and clockwise rotation animation.
+- Renamed the settings selector from `Proc` / `Прок` to `Searing Light`.
+
 ## [1.8.18] - 2026-08-30
 
 ### Changed
