@@ -4,6 +4,15 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.18] - 2026-08-30
+
+### Changed
+
+- Replaced the `Enlightened` artwork with a hollow ring of radial light rays
+  that leaves the character unobstructed.
+- Varied the ray length, brightness, spacing and color temperature for a less
+  uniform living-light effect while preserving the existing animation.
+
 ## [1.8.17] - 2026-08-30
 
 ### Fixed

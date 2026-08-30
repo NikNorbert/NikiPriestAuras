@@ -29,8 +29,9 @@ reminders automatically hide during taxi flights.
   display supports both pfUI and the original Blizzard player frame.
 - Animated `Searing Light` proc with flowing waves, pulsing light, a screen-edge
   glow and a short expanding fade after the proc is consumed by `Smite`.
-- Animated `Enlightened` light-ray aura that rotates and pulses faster as the
-  buff approaches expiration.
+- Animated hollow `Enlightened` aura with irregular light rays of varied
+  length and brightness. It keeps the character visible, rotates and pulses
+  faster as the buff approaches expiration.
 - Custom spell-shaped reminder artwork or the original spell icons.
 - Independent position, size and opacity settings for the central icon group,
   `Enlightened` aura and `Searing Light` proc.
