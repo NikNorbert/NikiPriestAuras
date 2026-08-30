@@ -86,11 +86,6 @@ if locale == "ruRU" then
     L.commands = "Команды: /npa, /npa show, /npa hide, /npa set, /npa reset, /npa test"
 end
 
-local function AddonVisualsEnabled()
-    return type(NikiPriestAurasDB) ~= "table" or
-           NikiPriestAurasDB.addonEnabled ~= false
-end
-
 local magicDispelCache = {}
 local inCombat = false
 local updateElapsed = 0
@@ -698,7 +693,8 @@ end
 local function SetProcAlert(visible, immediate)
     local testActive = procTestUntil and GetTime() < procTestUntil
     if visible and not settingsMode and not testActive and
-       not AddonVisualsEnabled() then
+       type(NikiPriestAurasDB) == "table" and
+       NikiPriestAurasDB.addonEnabled == false then
         visible = false
         immediate = true
     end
@@ -861,7 +857,9 @@ local function UpdateProcAnimation(elapsed)
 end
 
 local function SetEnlightenedAura(visible, timeLeft)
-    if visible and not settingsMode and not AddonVisualsEnabled() then
+    if visible and not settingsMode and
+       type(NikiPriestAurasDB) == "table" and
+       NikiPriestAurasDB.addonEnabled == false then
         visible = false
     end
     if visible and type(NikiPriestAurasDB) == "table" and
@@ -1612,7 +1610,8 @@ local function GetMissingPlayerBuffs()
 end
 
 local function UpdateReminders()
-    if not settingsMode and not AddonVisualsEnabled() then
+    if not settingsMode and type(NikiPriestAurasDB) == "table" and
+       NikiPriestAurasDB.addonEnabled == false then
         HideReminders()
         return
     end
@@ -2205,26 +2204,6 @@ local function SetProcAnimationSpeed(percent, quiet)
     end
 end
 
-local function ResetProcSettings()
-    if type(NikiPriestAurasDB) ~= "table" then
-        NikiPriestAurasDB = {}
-    end
-
-    NikiPriestAurasDB.procX = 0
-    NikiPriestAurasDB.procY = 155
-    NikiPriestAurasDB.procScale = 100
-    NikiPriestAurasDB.procAlpha = 85
-    NikiPriestAurasDB.procAnimationSpeed = 100
-    procFrame:ClearAllPoints()
-    procFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 155)
-    ApplyProcDimensions(1)
-    UpdateProcPlacementText()
-    if procFrame:IsShown() then
-        UpdateProcAnimation(0)
-    end
-    PrintMessage("Searing Light position, size, opacity and animation speed reset.")
-end
-
 local function SetProcPlacementMode(enabled)
     procPlacementMode = enabled and true or false
 
@@ -2321,15 +2300,15 @@ settingsFrame:SetBackdrop({
 })
 settingsFrame:SetBackdropColor(0.03, 0.04, 0.08, 0.96)
 
-local settingsTitle = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-settingsTitle:SetPoint("TOP", settingsFrame, "TOP", 0, -18)
-settingsTitle:SetText("NikiPriestAuras")
-settingsTitle:SetTextColor(1, 0.82, 0.20)
+settingsFrame.title = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+settingsFrame.title:SetPoint("TOP", settingsFrame, "TOP", 0, -18)
+settingsFrame.title:SetText("NikiPriestAuras")
+settingsFrame.title:SetTextColor(1, 0.82, 0.20)
 
-local selectionSection = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-selectionSection:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", 28, -52)
-selectionSection:SetText(L.configure)
-selectionSection:SetTextColor(0.65, 0.84, 1.00)
+settingsFrame.selectionSection = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+settingsFrame.selectionSection:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", 28, -52)
+settingsFrame.selectionSection:SetText(L.configure)
+settingsFrame.selectionSection:SetTextColor(0.65, 0.84, 1.00)
 
 local SelectSettingsObject
 local refreshingSettingsControls = false
@@ -2361,9 +2340,9 @@ CreateSelectionButton("NikiPriestAurasSelectIcons", L.icons, "icons", 24)
 CreateSelectionButton("NikiPriestAurasSelectAura", L.aura, "aura", 121)
 CreateSelectionButton("NikiPriestAurasSelectProc", L.proc, "proc", 215)
 
-local selectedObjectLabel = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-selectedObjectLabel:SetPoint("TOP", settingsFrame, "TOP", 0, -101)
-selectedObjectLabel:SetTextColor(1.00, 0.82, 0.20)
+settingsFrame.selectedObjectLabel = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+settingsFrame.selectedObjectLabel:SetPoint("TOP", settingsFrame, "TOP", 0, -101)
+settingsFrame.selectedObjectLabel:SetTextColor(1.00, 0.82, 0.20)
 
 local shieldEnabledCheckbox = CreateFrame(
     "CheckButton",
@@ -2375,10 +2354,10 @@ shieldEnabledCheckbox:SetWidth(22)
 shieldEnabledCheckbox:SetHeight(22)
 shieldEnabledCheckbox:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", 184, -274)
 
-local shieldEnabledLabel = shieldEnabledCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-shieldEnabledLabel:SetPoint("LEFT", shieldEnabledCheckbox, "RIGHT", 1, 0)
-shieldEnabledLabel:SetText(L.shieldWhileAttacked)
-shieldEnabledLabel:SetTextColor(0.82, 0.90, 1.00)
+shieldEnabledCheckbox.label = shieldEnabledCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+shieldEnabledCheckbox.label:SetPoint("LEFT", shieldEnabledCheckbox, "RIGHT", 1, 0)
+shieldEnabledCheckbox.label:SetText(L.shieldWhileAttacked)
+shieldEnabledCheckbox.label:SetTextColor(0.82, 0.90, 1.00)
 
 shieldEnabledCheckbox:SetScript("OnClick", function()
     if type(NikiPriestAurasDB) ~= "table" then
@@ -2399,10 +2378,10 @@ originalTexturesCheckbox:SetWidth(22)
 originalTexturesCheckbox:SetHeight(22)
 originalTexturesCheckbox:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", 25, -274)
 
-local originalTexturesLabel = originalTexturesCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-originalTexturesLabel:SetPoint("LEFT", originalTexturesCheckbox, "RIGHT", 1, 0)
-originalTexturesLabel:SetText(L.originalIcons)
-originalTexturesLabel:SetTextColor(0.82, 0.90, 1.00)
+originalTexturesCheckbox.label = originalTexturesCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+originalTexturesCheckbox.label:SetPoint("LEFT", originalTexturesCheckbox, "RIGHT", 1, 0)
+originalTexturesCheckbox.label:SetText(L.originalIcons)
+originalTexturesCheckbox.label:SetTextColor(0.82, 0.90, 1.00)
 
 originalTexturesCheckbox:SetScript("OnClick", function()
     if type(NikiPriestAurasDB) ~= "table" then
@@ -2414,10 +2393,10 @@ originalTexturesCheckbox:SetScript("OnClick", function()
     UpdateReminders()
 end)
 
-local shieldFrameSection = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-shieldFrameSection:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", 28, -307)
-shieldFrameSection:SetText(L.shieldFrame)
-shieldFrameSection:SetTextColor(0.65, 0.84, 1.00)
+settingsFrame.shieldFrameSection = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+settingsFrame.shieldFrameSection:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", 28, -307)
+settingsFrame.shieldFrameSection:SetText(L.shieldFrame)
+settingsFrame.shieldFrameSection:SetTextColor(0.65, 0.84, 1.00)
 
 local shieldFrameButtons = {}
 
@@ -2569,10 +2548,10 @@ auraEnabledCheckbox:SetWidth(22)
 auraEnabledCheckbox:SetHeight(22)
 auraEnabledCheckbox:SetPoint("TOPLEFT", settingsFrame, "TOPLEFT", 45, -229)
 
-local auraEnabledLabel = auraEnabledCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-auraEnabledLabel:SetPoint("LEFT", auraEnabledCheckbox, "RIGHT", 1, 0)
-auraEnabledLabel:SetText(L.enlightenedAuraEnabled)
-auraEnabledLabel:SetTextColor(0.82, 0.90, 1.00)
+auraEnabledCheckbox.label = auraEnabledCheckbox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+auraEnabledCheckbox.label:SetPoint("LEFT", auraEnabledCheckbox, "RIGHT", 1, 0)
+auraEnabledCheckbox.label:SetText(L.enlightenedAuraEnabled)
+auraEnabledCheckbox.label:SetTextColor(0.82, 0.90, 1.00)
 
 auraEnabledCheckbox:SetScript("OnClick", function()
     if type(NikiPriestAurasDB) ~= "table" then
@@ -2583,23 +2562,23 @@ auraEnabledCheckbox:SetScript("OnClick", function()
     UpdateReminders()
 end)
 
-local settingsHint = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-settingsHint:SetPoint("BOTTOM", settingsFrame, "BOTTOM", 0, 45)
-settingsHint:SetText(L.dragHint)
-settingsHint:SetTextColor(0.75, 0.75, 0.75)
+settingsFrame.hint = settingsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+settingsFrame.hint:SetPoint("BOTTOM", settingsFrame, "BOTTOM", 0, 45)
+settingsFrame.hint:SetText(L.dragHint)
+settingsFrame.hint:SetTextColor(0.75, 0.75, 0.75)
 
-local settingsClose = CreateFrame("Button", "NikiPriestAurasSettingsClose", settingsFrame, "UIPanelButtonTemplate")
-settingsClose:SetWidth(135)
-settingsClose:SetHeight(24)
-settingsClose:SetPoint("BOTTOM", settingsFrame, "BOTTOM", 0, 14)
-settingsClose:SetText(L.lock)
-settingsClose:SetScript("OnClick", function()
+settingsFrame.closeButton = CreateFrame("Button", "NikiPriestAurasSettingsClose", settingsFrame, "UIPanelButtonTemplate")
+settingsFrame.closeButton:SetWidth(135)
+settingsFrame.closeButton:SetHeight(24)
+settingsFrame.closeButton:SetPoint("BOTTOM", settingsFrame, "BOTTOM", 0, 14)
+settingsFrame.closeButton:SetText(L.lock)
+settingsFrame.closeButton:SetScript("OnClick", function()
     settingsFrame:Hide()
 end)
 
-local settingsCloseX = CreateFrame("Button", "NikiPriestAurasSettingsCloseX", settingsFrame, "UIPanelCloseButton")
-settingsCloseX:SetPoint("TOPRIGHT", settingsFrame, "TOPRIGHT", -4, -4)
-settingsCloseX:SetScript("OnClick", function()
+settingsFrame.closeX = CreateFrame("Button", "NikiPriestAurasSettingsCloseX", settingsFrame, "UIPanelCloseButton")
+settingsFrame.closeX:SetPoint("TOPRIGHT", settingsFrame, "TOPRIGHT", -4, -4)
+settingsFrame.closeX:SetScript("OnClick", function()
     settingsFrame:Hide()
 end)
 
@@ -2630,17 +2609,17 @@ local function RefreshSettingsControls()
     local size = 100
     local alpha = 100
     if settingsSelection == "icons" then
-        selectedObjectLabel:SetText(L.selectedIcons)
+        settingsFrame.selectedObjectLabel:SetText(L.selectedIcons)
         SetSliderRange(sharedSizeSlider, "NikiPriestAurasSharedSizeSlider", 50, 200)
         size = NikiPriestAurasDB.iconScale or 100
         alpha = NikiPriestAurasDB.alpha or 100
     elseif settingsSelection == "aura" then
-        selectedObjectLabel:SetText(L.selectedAura)
+        settingsFrame.selectedObjectLabel:SetText(L.selectedAura)
         SetSliderRange(sharedSizeSlider, "NikiPriestAurasSharedSizeSlider", 25, 250)
         size = NikiPriestAurasDB.auraScale or 100
         alpha = NikiPriestAurasDB.auraAlpha or 100
     else
-        selectedObjectLabel:SetText(L.selectedProc)
+        settingsFrame.selectedObjectLabel:SetText(L.selectedProc)
         SetSliderRange(sharedSizeSlider, "NikiPriestAurasSharedSizeSlider", 10, 300)
         size = NikiPriestAurasDB.procScale or 100
         alpha = NikiPriestAurasDB.procAlpha or 85

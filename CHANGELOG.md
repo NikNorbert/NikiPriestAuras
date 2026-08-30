@@ -4,6 +4,15 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.17] - 2026-08-30
+
+### Fixed
+
+- Fixed the complete addon load failure caused by exceeding Vanilla Lua's
+  200-active-local-variable limit after the slash-command update.
+- Reduced the main chunk to 189 top-level locals so future small additions
+  have safe headroom below the client limit.
+
 ## [1.8.16] - 2026-08-30
 
 ### Changed
