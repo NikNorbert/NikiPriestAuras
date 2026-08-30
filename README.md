@@ -1,7 +1,9 @@
 # NikiPriestAuras
 
-Animated Priest reminders for **Turtle WoW 1.18.1 / Vanilla 1.12**, designed
-to work alongside pfUI, SuperWoW and Nampower.
+**A Smite Priest addon for Turtle WoW / RavenCraft 1.18+.**
+
+Animated combat, buff and proc reminders designed to work alongside pfUI,
+SuperWoW and Nampower on the Vanilla 1.12 client API.
 
 NikiPriestAuras shows only reminders the player can act on: missing buffs,
 dispellable effects, `Power Word: Shield` status, the `Searing Light` proc and

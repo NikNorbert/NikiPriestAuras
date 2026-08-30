@@ -1,6 +1,6 @@
 ## Interface: 11200
 ## Title: NikiPriestAuras
-## Notes: Animated Priest buff, dispel, shield, proc and aura reminders.
+## Notes: Smite Priest reminders for Turtle WoW / RavenCraft 1.18+.
 ## Author: Niki
 ## Version: 1.8.13
 ## OptionalDeps: pfUI, SuperAPI, NampowerSettings

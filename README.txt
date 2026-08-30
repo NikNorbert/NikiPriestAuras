@@ -1,8 +1,8 @@
 NikiPriestAuras 1.8.13
 =====================
 
-Animated Priest buff, dispel, Power Word: Shield, Searing Light and Enlightened
-reminders for Turtle WoW 1.18.1 / Vanilla 1.12.
+Smite Priest buff, dispel, Power Word: Shield, Searing Light and Enlightened
+reminders for Turtle WoW / RavenCraft 1.18+ on the Vanilla 1.12 client API.
 
 Install to:
 Interface\AddOns\NikiPriestAuras
