@@ -25,6 +25,10 @@ reminders automatically hide during taxi flights.
   shield is missing or has five seconds or less remaining.
 - Smooth shield-icon pulsing while `Weakened Soul` prevents a recast. If the
   shield has already broken, the pulsing reminder changes to red.
+- Optional `Weakened Soul` countdown for the last group or raid member on whom
+  you successfully cast `Power Word: Shield`. It remains hidden while the
+  shield is active and appears only after the absorb has broken. Exact cast
+  recipient tracking uses SuperWoW's `UNIT_CASTEVENT`.
 - Optional player-frame shield durability estimate in the
   `remaining / maximum` format, with warning colors at low strength. The
   display supports both pfUI and the original Blizzard player frame.
@@ -93,6 +97,8 @@ configured elements:
 - **Aura** — enable/disable, position, size and opacity of the `Enlightened`
   aura.
 - **Searing Light** — position, size, opacity and animation speed of the proc.
+- **Tank Weakened Soul timer** — enable/disable the countdown and change the
+  size of its outlined luminous digits.
 
 Drag the selected element with the left mouse button. Press **Lock** to save
 the position, close the settings window and restore click-through behavior.

@@ -43,6 +43,7 @@ New-Item -ItemType Directory -Path $documentationImageRoot -Force | Out-Null
 $runtimeFiles = @(
     "NikiPriestAuras.toc",
     "NikiPriestAuras.lua",
+    "TankShieldTimer.lua",
     "ShieldTracker.lua",
     "README.md",
     "README.txt",

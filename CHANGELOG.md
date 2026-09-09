@@ -4,6 +4,18 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.21] - 2026-09-09
+
+### Added
+
+- Added an optional `Weakened Soul` countdown for the last group or raid
+  member successfully shielded by the player, using SuperWoW's exact cast
+  target event.
+- The countdown is displayed over a red custom shield reminder only after the
+  absorb has broken; it stays hidden while `Power Word: Shield` is active.
+- Added settings to enable the tank countdown and adjust its digit size from
+  12 to 64 pixels.
+
 ## [1.8.20] - 2026-09-09
 
 ### Changed

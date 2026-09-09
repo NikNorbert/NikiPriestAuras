@@ -2252,7 +2252,7 @@ end)
 -- Standalone settings window opened with /npa set.
 local settingsFrame = CreateFrame("Frame", "NikiPriestAurasSettingsFrame", UIParent)
 settingsFrame:SetWidth(335)
-settingsFrame:SetHeight(420)
+settingsFrame:SetHeight(505)
 settingsFrame:SetPoint("CENTER", UIParent, "CENTER", 330, 0)
 settingsFrame:SetFrameStrata("DIALOG")
 settingsFrame:SetFrameLevel(50)
