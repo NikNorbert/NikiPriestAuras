@@ -114,6 +114,7 @@ local procTestUntil = nil
 local enlightenedTestUntil = nil
 local lastIncomingCreatureAttack = nil
 local shieldBlinking = false
+local shieldWarningRed = false
 local wasOnTaxi = false
 local enlightenKnown = false
 local enlightenSpellTexture = nil
@@ -217,7 +218,7 @@ local shieldIcon = CreateReminderIcon(
     "Interface\\AddOns\\NikiPriestAuras\\Textures\\PowerWordShieldReminder_256",
     0.72, 0.86, 1.00,
     "Power Word: Shield",
-    "A creature is attacking the player and Power Word: Shield is missing or has no more than 5 seconds remaining. A smooth fast pulse means Weakened Soul is still active."
+    "A creature is attacking the player and Power Word: Shield is missing or has no more than 5 seconds remaining. A smooth fast pulse means Weakened Soul is still active; red means the shield has already broken."
 )
 
 local fortitudeIcon = CreateReminderIcon(
@@ -1017,6 +1018,8 @@ end
 
 local function HideReminders()
     shieldBlinking = false
+    shieldWarningRed = false
+    shieldIcon.icon:SetVertexColor(1, 1, 1, 1)
     local index
     for index = 1, table.getn(reminderIcons) do
         reminderIcons[index]:Hide()
@@ -1441,6 +1444,15 @@ local function PlayerIsOnTaxi()
 end
 
 local function UpdateShieldBlink()
+    if shieldWarningRed then
+        -- The shield has already broken while Weakened Soul still prevents a
+        -- recast. Multiplying the pale artwork by red keeps the same luminous
+        -- silhouette without introducing a separate square-backed texture.
+        shieldIcon.icon:SetVertexColor(1.00, 0.20, 0.20, 1)
+    else
+        shieldIcon.icon:SetVertexColor(1, 1, 1, 1)
+    end
+
     if shieldBlinking and shieldIcon:IsShown() and
        not settingsMode and not placementMode and not procPlacementMode then
         -- Weakened Soul prevents recasting the shield. Pulse quickly but
@@ -1574,6 +1586,7 @@ local function UpdateReminders()
 
     if settingsMode then
         shieldBlinking = false
+        shieldWarningRed = false
         if settingsSelection == "icons" then
             SetEnlightenedAura(false)
             SetProcAlert(false, true)
@@ -1593,6 +1606,7 @@ local function UpdateReminders()
 
     if procPlacementMode then
         shieldBlinking = false
+        shieldWarningRed = false
         SetEnlightenedAura(false)
         LayoutReminders(false, false, false, false, false, false, false)
         SetProcAlert(true)
@@ -1601,6 +1615,7 @@ local function UpdateReminders()
 
     if placementMode then
         shieldBlinking = false
+        shieldWarningRed = false
         SetProcAlert(false, true)
         SetEnlightenedAura(false)
         LayoutReminders(true, false, false, false, false, false, false)
@@ -1619,6 +1634,7 @@ local function UpdateReminders()
     local showDivineSpirit = false
     local showShield = false
     local blinkShield = false
+    local redShield = false
     local showDispel = false
     local showDisease = false
     local showSearingLight = false
@@ -1641,7 +1657,9 @@ local function UpdateReminders()
                    shieldTimeLeft <= SHIELD_WARNING_TIME then
                 showShield = true
             end
-            blinkShield = showShield and PlayerHasWeakenedSoul()
+            local hasWeakenedSoul = showShield and PlayerHasWeakenedSoul()
+            blinkShield = hasWeakenedSoul and true or false
+            redShield = hasWeakenedSoul and not hasShield
         end
         showSearingLight = PlayerHasSearingLightProc()
         showEnlightened, enlightenedTimeLeft = PlayerHasEnlightenedBuff()
@@ -1668,6 +1686,7 @@ local function UpdateReminders()
     end
 
     shieldBlinking = blinkShield and showShield
+    shieldWarningRed = redShield and showShield
     LayoutReminders(showDispel, showDisease, showFortitude, showInnerFire, showEnlighten, showDivineSpirit, showShield)
     UpdateShieldBlink()
     SetProcAlert(showSearingLight)

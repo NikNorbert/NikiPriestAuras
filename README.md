@@ -23,7 +23,8 @@ reminders automatically hide during taxi flights.
   member does not keep the player's reminder permanently active.
 - `Power Word: Shield` reminder when a creature is attacking the player and the
   shield is missing or has five seconds or less remaining.
-- Smooth shield-icon pulsing while `Weakened Soul` prevents a recast.
+- Smooth shield-icon pulsing while `Weakened Soul` prevents a recast. If the
+  shield has already broken, the pulsing reminder changes to red.
 - Optional player-frame shield durability estimate in the
   `remaining / maximum` format, with warning colors at low strength. The
   display supports both pfUI and the original Blizzard player frame.

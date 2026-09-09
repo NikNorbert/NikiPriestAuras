@@ -4,6 +4,15 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.20] - 2026-09-09
+
+### Changed
+
+- The blinking `Power Word: Shield` reminder is now red when the shield has
+  broken but `Weakened Soul` still prevents recasting it.
+- The normal light-blue appearance is preserved while an expiring shield is
+  still active.
+
 ## [1.8.19] - 2026-08-30
 
 ### Changed
