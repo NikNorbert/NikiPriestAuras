@@ -4,6 +4,16 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.22] - 2026-09-09
+
+### Changed
+
+- Detached the tank `Weakened Soul` timer from the central reminder icon row,
+  including its position, scale and opacity.
+- The timer preview can now be dragged anywhere on screen while `/npa set` is
+  open, and its exact position is saved when the mouse button is released.
+- `/npa reset` also restores the timer to its default independent position.
+
 ## [1.8.21] - 2026-09-09
 
 ### Added

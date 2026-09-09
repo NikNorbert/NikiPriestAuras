@@ -13,10 +13,12 @@ local locale = GetLocale and GetLocale() or "enUS"
 local timerLabel = "Tank Weakened Soul timer"
 local sizeLabel = "Timer number size"
 local pixelSuffix = " px"
+local moveHint = "Drag the red timer to place it anywhere on screen"
 if locale == "ruRU" then
     timerLabel = "Таймер Weakened Soul у танка"
     sizeLabel = "Размер цифр таймера"
     pixelSuffix = " пкс"
+    moveHint = "Перетащите красный таймер в любое место экрана"
 end
 
 local trackedName = nil
@@ -24,6 +26,7 @@ local trackedGuid = nil
 local trackedStartedAt = nil
 local trackedExpiresAt = nil
 local updateElapsed = 0
+local timerDragging = false
 
 local timerFrame = CreateFrame(
     "Frame",
@@ -32,15 +35,12 @@ local timerFrame = CreateFrame(
 )
 timerFrame:SetWidth(ICON_SIZE)
 timerFrame:SetHeight(ICON_SIZE)
-timerFrame:SetPoint(
-    "BOTTOM",
-    getglobal("NikiPriestAurasFrame") or UIParent,
-    "TOP",
-    0,
-    12
-)
+timerFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 76)
 timerFrame:SetFrameStrata("HIGH")
 timerFrame:SetFrameLevel(15)
+timerFrame:SetMovable(true)
+timerFrame:SetClampedToScreen(true)
+timerFrame:RegisterForDrag("LeftButton")
 timerFrame:EnableMouse(false)
 
 local timerTexture = timerFrame:CreateTexture(nil, "ARTWORK")
@@ -81,6 +81,12 @@ local function InitializeOptions()
     if type(NikiPriestAurasDB.tankShieldTimerFontSize) ~= "number" then
         NikiPriestAurasDB.tankShieldTimerFontSize = DEFAULT_FONT_SIZE
     end
+    if type(NikiPriestAurasDB.tankShieldTimerX) ~= "number" then
+        NikiPriestAurasDB.tankShieldTimerX = 0
+    end
+    if type(NikiPriestAurasDB.tankShieldTimerY) ~= "number" then
+        NikiPriestAurasDB.tankShieldTimerY = 76
+    end
     if NikiPriestAurasDB.tankShieldTimerFontSize < 12 then
         NikiPriestAurasDB.tankShieldTimerFontSize = 12
     elseif NikiPriestAurasDB.tankShieldTimerFontSize > 64 then
@@ -90,16 +96,67 @@ end
 
 local function ApplyTimerStyle()
     InitializeOptions()
-    local iconScale = (NikiPriestAurasDB.iconScale or 100) / 100
-    timerFrame:SetWidth(ICON_SIZE * iconScale)
-    timerFrame:SetHeight(ICON_SIZE * iconScale)
-    timerFrame:SetAlpha((NikiPriestAurasDB.alpha or 100) / 100)
+    -- Timer dimensions and opacity are intentionally independent of the
+    -- central reminder icon group.
+    timerFrame:SetWidth(ICON_SIZE)
+    timerFrame:SetHeight(ICON_SIZE)
+    timerFrame:SetAlpha(1)
     timerText:SetFont(
         "Fonts\\FRIZQT__.TTF",
         NikiPriestAurasDB.tankShieldTimerFontSize,
         "OUTLINE"
     )
 end
+
+local function ApplyTimerPosition()
+    InitializeOptions()
+    timerFrame:ClearAllPoints()
+    timerFrame:SetPoint(
+        "CENTER",
+        UIParent,
+        "CENTER",
+        NikiPriestAurasDB.tankShieldTimerX,
+        NikiPriestAurasDB.tankShieldTimerY
+    )
+end
+
+local function SaveTimerPosition()
+    InitializeOptions()
+    local frameX, frameY = timerFrame:GetCenter()
+    local parentX, parentY = UIParent:GetCenter()
+    if not frameX or not frameY or not parentX or not parentY then
+        return
+    end
+
+    NikiPriestAurasDB.tankShieldTimerX = frameX - parentX
+    NikiPriestAurasDB.tankShieldTimerY = frameY - parentY
+    ApplyTimerPosition()
+end
+
+local function FinishTimerDragging()
+    if not timerDragging then
+        return
+    end
+    timerFrame:StopMovingOrSizing()
+    timerDragging = false
+    SaveTimerPosition()
+end
+
+timerFrame:SetScript("OnDragStart", function()
+    local settings = getglobal("NikiPriestAurasSettingsFrame")
+    if settings and settings:IsShown() then
+        timerDragging = true
+        timerFrame:StartMoving()
+    end
+end)
+
+timerFrame:SetScript("OnDragStop", function()
+    FinishTimerDragging()
+end)
+
+timerFrame:SetScript("OnMouseUp", function()
+    FinishTimerDragging()
+end)
 
 local function NormalizeSpellId(spellId)
     if spellId and spellId < 0 then
@@ -250,13 +307,9 @@ local function UpdateTimerDisplay(force)
 
     local settingsFrame = getglobal("NikiPriestAurasSettingsFrame")
     if settingsFrame and settingsFrame:IsShown() then
-        if NikiPriestAurasDB.tankShieldTimerEnabled then
-            ApplyTimerStyle()
-            timerText:SetText("15")
-            timerFrame:Show()
-        else
-            timerFrame:Hide()
-        end
+        ApplyTimerStyle()
+        timerText:SetText("15")
+        timerFrame:Show()
         return
     end
 
@@ -318,6 +371,7 @@ eventFrame:SetScript("OnEvent", function()
     if event == "VARIABLES_LOADED" then
         InitializeOptions()
         ApplyTimerStyle()
+        ApplyTimerPosition()
     elseif event == "PLAYER_ENTERING_WORLD" then
         ClearTrackedTank()
     elseif event == "UNIT_CASTEVENT" then
@@ -381,8 +435,19 @@ if settingsFrame then
     sizeSlider:SetHeight(18)
     sizeSlider:SetMinMaxValues(12, 64)
     sizeSlider:SetValueStep(1)
-    getglobal("NikiPriestAurasTankShieldTimerSizeSliderLow"):SetText("12" .. pixelSuffix)
-    getglobal("NikiPriestAurasTankShieldTimerSizeSliderHigh"):SetText("64" .. pixelSuffix)
+    local sliderLow = getglobal("NikiPriestAurasTankShieldTimerSizeSliderLow")
+    local sliderHigh = getglobal("NikiPriestAurasTankShieldTimerSizeSliderHigh")
+    if sliderLow then sliderLow:SetText("12" .. pixelSuffix) end
+    if sliderHigh then sliderHigh:SetText("64" .. pixelSuffix) end
+
+    local dragHint = settingsFrame:CreateFontString(
+        nil,
+        "OVERLAY",
+        "GameFontNormalSmall"
+    )
+    dragHint:SetPoint("TOP", settingsFrame, "TOP", 0, -447)
+    dragHint:SetText(moveHint)
+    dragHint:SetTextColor(1.00, 0.82, 0.20)
 
     local refreshingControls = false
     local function RefreshControls()
@@ -403,6 +468,7 @@ if settingsFrame then
             )
         end
         refreshingControls = false
+        ApplyTimerPosition()
         UpdateTimerDisplay(true)
     end
 
@@ -434,7 +500,25 @@ if settingsFrame then
         if originalOnShow then
             originalOnShow()
         end
+        ApplyTimerPosition()
+        timerFrame:EnableMouse(true)
         RefreshControls()
+    end)
+
+    local originalOnHide = settingsFrame:GetScript("OnHide")
+    settingsFrame:SetScript("OnHide", function()
+        FinishTimerDragging()
+        timerFrame:EnableMouse(false)
+        if originalOnHide then
+            originalOnHide()
+        end
+        UpdateTimerDisplay(true)
     end)
 end
 
+function NikiPriestAuras_ResetTankShieldTimerPosition()
+    InitializeOptions()
+    NikiPriestAurasDB.tankShieldTimerX = 0
+    NikiPriestAurasDB.tankShieldTimerY = 76
+    ApplyTimerPosition()
+end

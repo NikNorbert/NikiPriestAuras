@@ -2,7 +2,7 @@
 ## Title: NikiPriestAuras
 ## Notes: Smite Priest reminders for Turtle WoW / RavenCraft 1.18+.
 ## Author: Niki
-## Version: 1.8.21
+## Version: 1.8.22
 ## OptionalDeps: pfUI, SuperAPI, NampowerSettings
 ## SavedVariables: NikiPriestAurasDB
 

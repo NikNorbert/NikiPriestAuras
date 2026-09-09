@@ -2012,6 +2012,9 @@ local function ResetPosition()
     NikiPriestAurasDB.y = 0
     anchor:ClearAllPoints()
     anchor:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    if type(NikiPriestAuras_ResetTankShieldTimerPosition) == "function" then
+        NikiPriestAuras_ResetTankShieldTimerPosition()
+    end
     UpdateReminders()
     PrintMessage("position reset to the center of the screen.")
 end
@@ -2252,7 +2255,7 @@ end)
 -- Standalone settings window opened with /npa set.
 local settingsFrame = CreateFrame("Frame", "NikiPriestAurasSettingsFrame", UIParent)
 settingsFrame:SetWidth(335)
-settingsFrame:SetHeight(505)
+settingsFrame:SetHeight(530)
 settingsFrame:SetPoint("CENTER", UIParent, "CENTER", 330, 0)
 settingsFrame:SetFrameStrata("DIALOG")
 settingsFrame:SetFrameLevel(50)
