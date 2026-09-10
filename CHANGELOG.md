@@ -4,6 +4,15 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.23] - 2026-09-10
+
+### Fixed
+
+- The tank `Weakened Soul` size slider now scales both the custom shield and
+  countdown digits instead of changing only the font.
+- Worked around Vanilla's effective font-size ceiling by scaling a crisp
+  19-pixel base glyph, making the complete 12–64 range visually responsive.
+
 ## [1.8.22] - 2026-09-09
 
 ### Changed

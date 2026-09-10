@@ -7,16 +7,17 @@
 local WEAKENED_SOUL_DURATION = 15
 local UPDATE_INTERVAL = 0.10
 local ICON_SIZE = 64
-local DEFAULT_FONT_SIZE = 30
+local BASE_FONT_SIZE = 19
+local DEFAULT_TIMER_SIZE = 19
 
 local locale = GetLocale and GetLocale() or "enUS"
 local timerLabel = "Tank Weakened Soul timer"
-local sizeLabel = "Timer number size"
+local sizeLabel = "Timer size"
 local pixelSuffix = " px"
 local moveHint = "Drag the red timer to place it anywhere on screen"
 if locale == "ruRU" then
     timerLabel = "Таймер Weakened Soul у танка"
-    sizeLabel = "Размер цифр таймера"
+    sizeLabel = "Размер таймера"
     pixelSuffix = " пкс"
     moveHint = "Перетащите красный таймер в любое место экрана"
 end
@@ -43,15 +44,23 @@ timerFrame:SetClampedToScreen(true)
 timerFrame:RegisterForDrag("LeftButton")
 timerFrame:EnableMouse(false)
 
-local timerTexture = timerFrame:CreateTexture(nil, "ARTWORK")
+-- Vanilla's font renderer stops producing reliable larger glyphs above about
+-- 19 px. Keep a crisp 19 px base glyph and scale this visual child instead;
+-- the shield and number then grow together throughout the full slider range.
+local timerVisual = CreateFrame("Frame", nil, timerFrame)
+timerVisual:SetWidth(ICON_SIZE)
+timerVisual:SetHeight(ICON_SIZE)
+timerVisual:SetPoint("CENTER", timerFrame, "CENTER", 0, 0)
+
+local timerTexture = timerVisual:CreateTexture(nil, "ARTWORK")
 timerTexture:SetTexture(
     "Interface\\AddOns\\NikiPriestAuras\\Textures\\PowerWordShieldReminder_256"
 )
-timerTexture:SetAllPoints(timerFrame)
+timerTexture:SetAllPoints(timerVisual)
 timerTexture:SetVertexColor(1.00, 0.20, 0.20, 1)
 
-local timerText = timerFrame:CreateFontString(nil, "OVERLAY")
-timerText:SetPoint("CENTER", timerFrame, "CENTER", 0, 0)
+local timerText = timerVisual:CreateFontString(nil, "OVERLAY")
+timerText:SetPoint("CENTER", timerVisual, "CENTER", 0, 0)
 timerText:SetTextColor(1.00, 0.94, 0.86)
 timerText:SetShadowColor(0.45, 0.00, 0.00, 1)
 timerText:SetShadowOffset(2, -2)
@@ -79,7 +88,7 @@ local function InitializeOptions()
         NikiPriestAurasDB.tankShieldTimerEnabled = true
     end
     if type(NikiPriestAurasDB.tankShieldTimerFontSize) ~= "number" then
-        NikiPriestAurasDB.tankShieldTimerFontSize = DEFAULT_FONT_SIZE
+        NikiPriestAurasDB.tankShieldTimerFontSize = DEFAULT_TIMER_SIZE
     end
     if type(NikiPriestAurasDB.tankShieldTimerX) ~= "number" then
         NikiPriestAurasDB.tankShieldTimerX = 0
@@ -98,12 +107,15 @@ local function ApplyTimerStyle()
     InitializeOptions()
     -- Timer dimensions and opacity are intentionally independent of the
     -- central reminder icon group.
-    timerFrame:SetWidth(ICON_SIZE)
-    timerFrame:SetHeight(ICON_SIZE)
+    local visualScale =
+        NikiPriestAurasDB.tankShieldTimerFontSize / BASE_FONT_SIZE
+    timerFrame:SetWidth(ICON_SIZE * visualScale)
+    timerFrame:SetHeight(ICON_SIZE * visualScale)
+    timerVisual:SetScale(visualScale)
     timerFrame:SetAlpha(1)
     timerText:SetFont(
         "Fonts\\FRIZQT__.TTF",
-        NikiPriestAurasDB.tankShieldTimerFontSize,
+        BASE_FONT_SIZE,
         "OUTLINE"
     )
 end
