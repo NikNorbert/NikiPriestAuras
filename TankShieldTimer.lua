@@ -8,16 +8,23 @@ local WEAKENED_SOUL_DURATION = 15
 local UPDATE_INTERVAL = 0.10
 local ICON_SIZE = 64
 local BASE_FONT_SIZE = 19
-local DEFAULT_TIMER_SIZE = 19
+local DEFAULT_ICON_SIZE = 64
+local DEFAULT_FONT_SIZE = 19
+local MIN_ICON_SIZE = 32
+local MAX_ICON_SIZE = 128
+local MIN_FONT_SIZE = 12
+local MAX_FONT_SIZE = 48
 
 local locale = GetLocale and GetLocale() or "enUS"
 local timerLabel = "Tank Weakened Soul timer"
-local sizeLabel = "Timer size"
+local iconSizeLabel = "Icon size"
+local fontSizeLabel = "Digits"
 local pixelSuffix = " px"
 local moveHint = "Drag the red timer to place it anywhere on screen"
 if locale == "ruRU" then
     timerLabel = "Таймер Weakened Soul у танка"
-    sizeLabel = "Размер таймера"
+    iconSizeLabel = "Размер иконки"
+    fontSizeLabel = "Цифры"
     pixelSuffix = " пкс"
     moveHint = "Перетащите красный таймер в любое место экрана"
 end
@@ -44,13 +51,14 @@ timerFrame:SetClampedToScreen(true)
 timerFrame:RegisterForDrag("LeftButton")
 timerFrame:EnableMouse(false)
 
--- Vanilla's font renderer stops producing reliable larger glyphs above about
--- 19 px. Keep a crisp 19 px base glyph and scale this visual child instead;
--- the shield and number then grow together throughout the full slider range.
+-- The shield and digits use separate scaled children so their sizes can be
+-- configured independently without relying on Vanilla's unreliable >19px
+-- font rendering.
 local timerVisual = CreateFrame("Frame", nil, timerFrame)
 timerVisual:SetWidth(ICON_SIZE)
 timerVisual:SetHeight(ICON_SIZE)
 timerVisual:SetPoint("CENTER", timerFrame, "CENTER", 0, 0)
+timerVisual:SetFrameLevel(timerFrame:GetFrameLevel() + 1)
 
 local timerTexture = timerVisual:CreateTexture(nil, "ARTWORK")
 timerTexture:SetTexture(
@@ -59,8 +67,14 @@ timerTexture:SetTexture(
 timerTexture:SetAllPoints(timerVisual)
 timerTexture:SetVertexColor(1.00, 0.20, 0.20, 1)
 
-local timerText = timerVisual:CreateFontString(nil, "OVERLAY")
-timerText:SetPoint("CENTER", timerVisual, "CENTER", 0, 0)
+local timerTextVisual = CreateFrame("Frame", nil, timerFrame)
+timerTextVisual:SetWidth(ICON_SIZE)
+timerTextVisual:SetHeight(ICON_SIZE)
+timerTextVisual:SetPoint("CENTER", timerFrame, "CENTER", 0, 0)
+timerTextVisual:SetFrameLevel(timerFrame:GetFrameLevel() + 2)
+
+local timerText = timerTextVisual:CreateFontString(nil, "OVERLAY")
+timerText:SetPoint("CENTER", timerTextVisual, "CENTER", 0, 0)
 timerText:SetTextColor(1.00, 0.94, 0.86)
 timerText:SetShadowColor(0.45, 0.00, 0.00, 1)
 timerText:SetShadowOffset(2, -2)
@@ -87,8 +101,19 @@ local function InitializeOptions()
     if type(NikiPriestAurasDB.tankShieldTimerEnabled) ~= "boolean" then
         NikiPriestAurasDB.tankShieldTimerEnabled = true
     end
-    if type(NikiPriestAurasDB.tankShieldTimerFontSize) ~= "number" then
-        NikiPriestAurasDB.tankShieldTimerFontSize = DEFAULT_TIMER_SIZE
+    local legacyTimerSize = NikiPriestAurasDB.tankShieldTimerFontSize
+    if type(legacyTimerSize) ~= "number" then
+        NikiPriestAurasDB.tankShieldTimerFontSize = DEFAULT_FONT_SIZE
+    end
+    if type(NikiPriestAurasDB.tankShieldTimerIconSize) ~= "number" then
+        -- Preserve the visual icon size selected in 1.8.23, where one slider
+        -- scaled the shield and digits together.
+        if type(legacyTimerSize) == "number" then
+            NikiPriestAurasDB.tankShieldTimerIconSize =
+                math.floor(ICON_SIZE * legacyTimerSize / BASE_FONT_SIZE + 0.5)
+        else
+            NikiPriestAurasDB.tankShieldTimerIconSize = DEFAULT_ICON_SIZE
+        end
     end
     if type(NikiPriestAurasDB.tankShieldTimerX) ~= "number" then
         NikiPriestAurasDB.tankShieldTimerX = 0
@@ -96,10 +121,15 @@ local function InitializeOptions()
     if type(NikiPriestAurasDB.tankShieldTimerY) ~= "number" then
         NikiPriestAurasDB.tankShieldTimerY = 76
     end
-    if NikiPriestAurasDB.tankShieldTimerFontSize < 12 then
-        NikiPriestAurasDB.tankShieldTimerFontSize = 12
-    elseif NikiPriestAurasDB.tankShieldTimerFontSize > 64 then
-        NikiPriestAurasDB.tankShieldTimerFontSize = 64
+    if NikiPriestAurasDB.tankShieldTimerIconSize < MIN_ICON_SIZE then
+        NikiPriestAurasDB.tankShieldTimerIconSize = MIN_ICON_SIZE
+    elseif NikiPriestAurasDB.tankShieldTimerIconSize > MAX_ICON_SIZE then
+        NikiPriestAurasDB.tankShieldTimerIconSize = MAX_ICON_SIZE
+    end
+    if NikiPriestAurasDB.tankShieldTimerFontSize < MIN_FONT_SIZE then
+        NikiPriestAurasDB.tankShieldTimerFontSize = MIN_FONT_SIZE
+    elseif NikiPriestAurasDB.tankShieldTimerFontSize > MAX_FONT_SIZE then
+        NikiPriestAurasDB.tankShieldTimerFontSize = MAX_FONT_SIZE
     end
 end
 
@@ -107,11 +137,12 @@ local function ApplyTimerStyle()
     InitializeOptions()
     -- Timer dimensions and opacity are intentionally independent of the
     -- central reminder icon group.
-    local visualScale =
-        NikiPriestAurasDB.tankShieldTimerFontSize / BASE_FONT_SIZE
-    timerFrame:SetWidth(ICON_SIZE * visualScale)
-    timerFrame:SetHeight(ICON_SIZE * visualScale)
-    timerVisual:SetScale(visualScale)
+    local iconSize = NikiPriestAurasDB.tankShieldTimerIconSize
+    local fontSize = NikiPriestAurasDB.tankShieldTimerFontSize
+    timerFrame:SetWidth(math.max(iconSize, fontSize * 2.5))
+    timerFrame:SetHeight(math.max(iconSize, fontSize * 1.5))
+    timerVisual:SetScale(iconSize / ICON_SIZE)
+    timerTextVisual:SetScale(fontSize / BASE_FONT_SIZE)
     timerFrame:SetAlpha(1)
     timerText:SetFont(
         "Fonts\\FRIZQT__.TTF",
@@ -436,28 +467,61 @@ if settingsFrame then
     enabledLabel:SetText(timerLabel)
     enabledLabel:SetTextColor(0.82, 0.90, 1.00)
 
-    local sizeSlider = CreateFrame(
+    local iconSizeSlider = CreateFrame(
         "Slider",
         "NikiPriestAurasTankShieldTimerSizeSlider",
         settingsFrame,
         "OptionsSliderTemplate"
     )
-    sizeSlider:SetPoint("TOP", settingsFrame, "TOP", 0, -407)
-    sizeSlider:SetWidth(235)
-    sizeSlider:SetHeight(18)
-    sizeSlider:SetMinMaxValues(12, 64)
-    sizeSlider:SetValueStep(1)
+    iconSizeSlider:SetPoint("TOP", settingsFrame, "TOP", 0, -407)
+    iconSizeSlider:SetWidth(235)
+    iconSizeSlider:SetHeight(18)
+    iconSizeSlider:SetMinMaxValues(MIN_ICON_SIZE, MAX_ICON_SIZE)
+    iconSizeSlider:SetValueStep(1)
     local sliderLow = getglobal("NikiPriestAurasTankShieldTimerSizeSliderLow")
     local sliderHigh = getglobal("NikiPriestAurasTankShieldTimerSizeSliderHigh")
-    if sliderLow then sliderLow:SetText("12" .. pixelSuffix) end
-    if sliderHigh then sliderHigh:SetText("64" .. pixelSuffix) end
+    if sliderLow then sliderLow:SetText(tostring(MIN_ICON_SIZE) .. pixelSuffix) end
+    if sliderHigh then sliderHigh:SetText(tostring(MAX_ICON_SIZE) .. pixelSuffix) end
+
+    local fontLabel = settingsFrame:CreateFontString(
+        nil,
+        "OVERLAY",
+        "GameFontNormalSmall"
+    )
+    fontLabel:SetPoint("TOP", settingsFrame, "TOP", -32, -440)
+    fontLabel:SetText(fontSizeLabel .. ":")
+    fontLabel:SetTextColor(0.82, 0.90, 1.00)
+
+    local fontSizeBox = CreateFrame(
+        "EditBox",
+        "NikiPriestAurasTankShieldTimerFontSize",
+        settingsFrame,
+        "InputBoxTemplate"
+    )
+    fontSizeBox:SetWidth(38)
+    fontSizeBox:SetHeight(20)
+    fontSizeBox:SetPoint("LEFT", fontLabel, "RIGHT", 8, 0)
+    fontSizeBox:SetAutoFocus(false)
+    fontSizeBox:SetMaxLetters(2)
+    if fontSizeBox.SetNumeric then
+        fontSizeBox:SetNumeric(true)
+    end
+
+    local fontSuffix = settingsFrame:CreateFontString(
+        nil,
+        "OVERLAY",
+        "GameFontNormalSmall"
+    )
+    fontSuffix:SetPoint("LEFT", fontSizeBox, "RIGHT", 5, 0)
+    fontSuffix:SetText("px (12-48)")
+    fontSuffix:SetTextColor(0.75, 0.75, 0.75)
 
     local dragHint = settingsFrame:CreateFontString(
         nil,
         "OVERLAY",
         "GameFontNormalSmall"
     )
-    dragHint:SetPoint("TOP", settingsFrame, "TOP", 0, -447)
+    dragHint:SetPoint("TOP", settingsFrame, "TOP", 0, -465)
     dragHint:SetText(moveHint)
     dragHint:SetTextColor(1.00, 0.82, 0.20)
 
@@ -468,14 +532,15 @@ if settingsFrame then
         enabledCheckbox:SetChecked(
             NikiPriestAurasDB.tankShieldTimerEnabled and 1 or nil
         )
-        sizeSlider:SetValue(NikiPriestAurasDB.tankShieldTimerFontSize)
+        iconSizeSlider:SetValue(NikiPriestAurasDB.tankShieldTimerIconSize)
+        fontSizeBox:SetText(tostring(NikiPriestAurasDB.tankShieldTimerFontSize))
         local sliderText = getglobal(
             "NikiPriestAurasTankShieldTimerSizeSliderText"
         )
         if sliderText then
             sliderText:SetText(
-                sizeLabel .. ": " ..
-                tostring(NikiPriestAurasDB.tankShieldTimerFontSize) ..
+                iconSizeLabel .. ": " ..
+                tostring(NikiPriestAurasDB.tankShieldTimerIconSize) ..
                 pixelSuffix
             )
         end
@@ -491,20 +556,47 @@ if settingsFrame then
         UpdateTimerDisplay(true)
     end)
 
-    sizeSlider:SetScript("OnValueChanged", function()
+    iconSizeSlider:SetScript("OnValueChanged", function()
         local value = math.floor(this:GetValue() + 0.5)
         local sliderText = getglobal(
             "NikiPriestAurasTankShieldTimerSizeSliderText"
         )
         if sliderText then
-            sliderText:SetText(sizeLabel .. ": " .. tostring(value) .. pixelSuffix)
+            sliderText:SetText(iconSizeLabel .. ": " .. tostring(value) .. pixelSuffix)
         end
         if not refreshingControls then
             InitializeOptions()
-            NikiPriestAurasDB.tankShieldTimerFontSize = value
+            NikiPriestAurasDB.tankShieldTimerIconSize = value
             ApplyTimerStyle()
             UpdateTimerDisplay(true)
         end
+    end)
+
+    local function ApplyFontSizeBox()
+        InitializeOptions()
+        local value = tonumber(fontSizeBox:GetText())
+        if not value then
+            value = NikiPriestAurasDB.tankShieldTimerFontSize
+        end
+        value = math.floor(value + 0.5)
+        value = math.max(MIN_FONT_SIZE, math.min(MAX_FONT_SIZE, value))
+        NikiPriestAurasDB.tankShieldTimerFontSize = value
+        fontSizeBox:SetText(tostring(value))
+        ApplyTimerStyle()
+        UpdateTimerDisplay(true)
+    end
+
+    fontSizeBox:SetScript("OnEnterPressed", function()
+        ApplyFontSizeBox()
+        this:ClearFocus()
+    end)
+    fontSizeBox:SetScript("OnEditFocusLost", function()
+        ApplyFontSizeBox()
+    end)
+    fontSizeBox:SetScript("OnEscapePressed", function()
+        InitializeOptions()
+        this:SetText(tostring(NikiPriestAurasDB.tankShieldTimerFontSize))
+        this:ClearFocus()
     end)
 
     local originalOnShow = settingsFrame:GetScript("OnShow")

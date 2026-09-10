@@ -4,6 +4,15 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.25] - 2026-09-10
+
+### Changed
+
+- Split the tank `Weakened Soul` timer sizing into an independent 32–128 px
+  shield slider and a numeric 12–48 px digit-size field.
+- Existing 1.8.23/1.8.24 timer sizing is migrated without unexpectedly
+  shrinking the shield.
+
 ## [1.8.24] - 2026-09-10
 
 ### Fixed

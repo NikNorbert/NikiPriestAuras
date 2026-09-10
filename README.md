@@ -101,9 +101,10 @@ configured elements:
 - **Aura** — enable/disable, position, size and opacity of the `Enlightened`
   aura.
 - **Searing Light** — position, size, opacity and animation speed of the proc.
-- **Tank Weakened Soul timer** — enable/disable the countdown and resize the
-  complete indicator, including both its custom shield and outlined luminous
-  digits. Its preview can be dragged freely while the settings window is open.
+- **Tank Weakened Soul timer** — enable/disable the countdown, resize its
+  custom shield with a 32–128 px slider, and enter an independent 12–48 px
+  digit size. Its preview can be dragged freely while the settings window is
+  open.
 
 Drag the selected element with the left mouse button. Press **Lock** to save
 the position, close the settings window and restore click-through behavior.

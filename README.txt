@@ -1,4 +1,4 @@
-NikiPriestAuras 1.8.24
+NikiPriestAuras 1.8.25
 =====================
 
 Smite Priest buff, dispel, Power Word: Shield, Searing Light and Enlightened
@@ -19,6 +19,9 @@ The settings window independently controls the position, size and opacity of
 the central icons, Enlightened aura and Searing Light proc. It also provides
 icon spacing, proc animation speed, original/custom texture and shield-reminder
 options.
+
+The tank Weakened Soul timer has a 32-128 px shield-size slider and a separate
+numeric 12-48 px digit-size field.
 
 Shield durability numbers can use either the pfUI player frame or the original
 Blizzard player frame. Choose the display mode in /npa set.
