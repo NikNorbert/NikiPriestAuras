@@ -4,6 +4,15 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.24] - 2026-09-10
+
+### Fixed
+
+- `Dispel Magic` now appears for a selected hostile target with a removable
+  magic buff before combat as well as during combat.
+- Added reliable hostile-target polling for Vanilla clients that delay or omit
+  `UNIT_AURA` updates, and accept both numeric and string magic-dispel metadata.
+
 ## [1.8.23] - 2026-09-10
 
 ### Fixed

@@ -15,7 +15,8 @@ reminders automatically hide during taxi flights.
 ## Features
 
 - `Dispel Magic` reminder for a magic debuff on the player or a friendly target,
-  and for a removable magic buff on a hostile target.
+  and for a removable magic buff on a selected hostile target both before and
+  during combat.
 - `Cure Disease` reminder for a disease on the player or a friendly target.
 - Missing-buff reminders for `Power Word: Fortitude`, `Inner Fire`,
   `Divine Spirit` and `Enlighten`.

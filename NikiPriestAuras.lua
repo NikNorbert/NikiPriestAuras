@@ -1230,14 +1230,19 @@ local function IsMagicAura(spellId)
         if ok then
             dispelType = value
         end
-    elseif type(GetSpellRec) == "function" then
+    end
+    if dispelType == nil and type(GetSpellRec) == "function" then
         local ok, spellData = pcall(GetSpellRec, spellId)
         if ok and spellData then
             dispelType = spellData.dispel
         end
     end
 
-    magicDispelCache[spellId] = (dispelType == MAGIC_DISPEL_TYPE)
+    -- Nampower builds have returned both the numeric Spell.dbc value and the
+    -- localized-independent string "Magic" here. Accept either representation.
+    magicDispelCache[spellId] =
+        tonumber(dispelType) == MAGIC_DISPEL_TYPE or
+        string.lower(tostring(dispelType)) == "magic"
     return magicDispelCache[spellId]
 end
 
@@ -1675,10 +1680,12 @@ local function UpdateReminders()
         end
     end
 
-    if inCombat and UnitExists("target") and not UnitIsDeadOrGhost("target") then
+    if UnitExists("target") and not UnitIsDeadOrGhost("target") then
         if UnitCanAttack("player", "target") then
+            -- Offensive Dispel Magic is useful before the first hostile action
+            -- as well as during combat, so always inspect an attackable target.
             showDispel = showDispel or HostileTargetHasMagicBuff()
-        elseif UnitIsFriend("player", "target") then
+        elseif inCombat and UnitIsFriend("player", "target") then
             local targetMagic, targetDisease = GetUnitDispelTypes("target")
             showDispel = targetMagic or showDispel
             showDisease = targetDisease or showDisease
@@ -2928,7 +2935,12 @@ anchor:SetScript("OnUpdate", function()
         end
     end
 
-    if not inCombat and not procFrame:IsShown() and not enlightenedAuraFrame:IsShown() then
+    local watchingHostileTarget =
+        UnitExists("target") and
+        not UnitIsDeadOrGhost("target") and
+        UnitCanAttack("player", "target")
+    if not inCombat and not watchingHostileTarget and
+       not procFrame:IsShown() and not enlightenedAuraFrame:IsShown() then
         return
     end
 

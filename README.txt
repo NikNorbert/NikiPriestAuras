@@ -1,4 +1,4 @@
-NikiPriestAuras 1.8.23
+NikiPriestAuras 1.8.24
 =====================
 
 Smite Priest buff, dispel, Power Word: Shield, Searing Light and Enlightened
