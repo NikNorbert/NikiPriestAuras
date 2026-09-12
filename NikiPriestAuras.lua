@@ -1649,6 +1649,7 @@ local function UpdateReminders()
     if playerClass == "PRIEST" then
         showDispel, showDisease = GetUnitDispelTypes("player")
         local missingFortitude, missingInnerFire, missingEnlighten, missingDivineSpirit = GetMissingPlayerBuffs()
+        showFortitude = missingFortitude
         showInnerFire = missingInnerFire
         showEnlighten = missingEnlighten
         showDivineSpirit = missingDivineSpirit
@@ -1674,9 +1675,6 @@ local function UpdateReminders()
         if enlightenedTestUntil and GetTime() < enlightenedTestUntil then
             showEnlightened = true
             enlightenedTimeLeft = enlightenedTestUntil - GetTime()
-        end
-        if not inCombat then
-            showFortitude = missingFortitude
         end
     end
 

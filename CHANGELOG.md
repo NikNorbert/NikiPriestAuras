@@ -4,6 +4,13 @@ All notable changes to NikiPriestAuras are documented here.
 
 ## [Unreleased]
 
+## [1.8.26] - 2026-09-13
+
+### Fixed
+
+- Keep the missing Fortitude reminder visible during combat, including when
+  the buff expires or is dispelled mid-fight.
+
 ## [1.8.25] - 2026-09-10
 
 ### Changed

@@ -19,7 +19,8 @@ reminders automatically hide during taxi flights.
   during combat.
 - `Cure Disease` reminder for a disease on the player or a friendly target.
 - Missing-buff reminders for `Power Word: Fortitude`, `Inner Fire`,
-  `Divine Spirit` and `Enlighten`.
+  `Divine Spirit` and `Enlighten`. The Fortitude reminder stays visible during
+  combat when the buff is missing.
 - `Enlighten` is checked only on the player, so casting it on another party
   member does not keep the player's reminder permanently active.
 - `Power Word: Shield` reminder when a creature is attacking the player and the
